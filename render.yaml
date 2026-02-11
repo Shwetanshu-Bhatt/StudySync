@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: studysync-backend
+    env: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        fromDatabase:
+          name: studysync-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: studysync-db
+    plan: free
+    databaseName: studysync
+    user: studysync
