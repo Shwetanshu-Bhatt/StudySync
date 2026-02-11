@@ -1,6 +1,17 @@
 # Dependencies
 node_modules/
 plans/
+
+# Python
+StudySync/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
 # Build outputs
 dist/
 build/
