@@ -6,8 +6,8 @@ StudySync is a production-quality academic platform built with the MERN stack, f
 ## Technology Stack Decisions
 
 ### Backend
-- **Runtime**: Node.js v18+  (DONE)
-- **Framework**: Express.js v4
+- **Runtime**: Node.js v18+
+- **Framework**: Express.js v4 
 - **Database**: MongoDB Atlas (Mongoose ODM)
 - **Real-time**: Socket.io v4
 - **Authentication**: JWT + bcrypt
