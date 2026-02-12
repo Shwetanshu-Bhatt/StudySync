@@ -1,66 +1,110 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import { useAuth } from './AuthContext';
 
 const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }) => {
   const { user } = useAuth();
-  const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const pollingIntervalRef = useRef(null);
+  const lastMessageIdRef = useRef(null);
 
-  useEffect(() => {
-    if (user) {
-      const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-      newSocket.on('connect', () => {
-        setIsConnected(true);
-        newSocket.emit('joinRoom', {
-          userId: user.id,
-          name: user.name,
-          role: user.role
+  const getRoom = () => {
+    if (!user) return null;
+    return `${user.role}-room`;
+  };
+
+  const fetchMessages = async () => {
+    const room = getRoom();
+    if (!room) return;
+
+    try {
+      const response = await axios.get(`${API_URL}/api/chat/messages`, {
+        params: {
+          room,
+          lastMessageId: lastMessageIdRef.current
+        },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.data.length > 0) {
+        setMessages((prev) => {
+          const newMessages = response.data.data.filter(
+            (msg) => !prev.find((p) => p._id === msg._id)
+          );
+          return [...prev, ...newMessages];
         });
-      });
 
-      newSocket.on('disconnect', () => {
-        setIsConnected(false);
-      });
-
-      newSocket.on('receiveMessage', (message) => {
-        setMessages((prev) => [...prev, message]);
-      });
-
-      newSocket.on('updateUsers', (users) => {
-        setOnlineUsers(users);
-      });
-
-      newSocket.on('loadMessages', (msgs) => {
-        setMessages(msgs);
-      });
-
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.close();
-      };
-    }
-  }, [user]);
-
-  const sendMessage = (message) => {
-    if (socket) {
-      socket.emit('sendMessage', { message });
+        // Update last message ID for polling
+        const lastMsg = response.data.data[response.data.data.length - 1];
+        if (lastMsg) {
+          lastMessageIdRef.current = lastMsg._id;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
     }
   };
 
+  const sendMessage = async (messageText) => {
+    const room = getRoom();
+    if (!room || !messageText.trim()) return;
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/chat/send`,
+        { message: messageText, room },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setMessages((prev) => [...prev, response.data.data]);
+        lastMessageIdRef.current = response.data.data._id;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      // Initial fetch
+      fetchMessages();
+
+      // Set up polling (every 3 seconds)
+      pollingIntervalRef.current = setInterval(fetchMessages, 3000);
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      };
+    } else {
+      // Clear messages when user logs out
+      setMessages([]);
+      lastMessageIdRef.current = null;
+    }
+  }, [user]);
+
   const value = {
-    socket,
     messages,
+    sendMessage,
+    isLoading,
     setMessages,
-    onlineUsers,
-    isConnected,
-    sendMessage
+    room: getRoom()
   };
 
   return (

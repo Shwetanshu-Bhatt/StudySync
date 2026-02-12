@@ -1,282 +1,307 @@
-# StudySync Deployment Guide
+# StudySync Deployment Guide (Serverless)
 
-This guide covers deploying StudySync to production using Vercel (frontend) and Render (backend).
+This guide covers deploying StudySync to Vercel for both frontend and backend (serverless functions).
+
+## Architecture Change
+
+**Previously:** Express server with Socket.io (required Render)
+**Now:** Vercel Serverless Functions with Polling (no backend server needed!)
+
+### Changes Made:
+- Backend converted to Vercel API routes (serverless)
+- Socket.io replaced with HTTP polling for chat
+- Single Vercel deployment for both frontend and API
+
+---
 
 ## Prerequisites
 
-- GitHub account with the StudySync repository
+- GitHub account with StudySync repository
 - Vercel account (free tier works)
-- Render account (free tier works)
-- MongoDB Atlas account (or use Render's managed database)
-- Cloudinary account for file storage
+- MongoDB Atlas account
+- Cloudinary account
 
 ---
 
-## Part 1: Backend Deployment (Render)
+## Deployment Steps
 
-### Option A: Deploy with Render Blueprint (Recommended)
-
-1. **Push your code to GitHub**
-   ```bash
-   git add .
-   git commit -m "Prepare for deployment"
-   git push origin main
-   ```
-
-2. **Connect to Render**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New +" and select "Blueprint"
-   - Connect your GitHub repository
-   - Render will detect the `render.yaml` file
-
-3. **Configure Environment Variables**
-   In the Render dashboard, add these environment variables:
-   ```
-   NODE_ENV=production
-   JWT_SECRET=your-super-secret-jwt-key-change-this
-   JWT_EXPIRE=7d
-   CLOUDINARY_CLOUD_NAME=your-cloud-name
-   CLOUDINARY_API_KEY=your-api-key
-   CLOUDINARY_API_SECRET=your-api-secret
-   PORT=10000
-   ```
-
-4. **Deploy**
-   - Click "Apply"
-   - Wait for the build to complete
-   - Your backend will be available at `https://studysync-backend.onrender.com`
-
-### Option B: Deploy Manually
-
-1. **Create a new Web Service on Render**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New +" and select "Web Service"
-   - Connect your GitHub repository
-   - Configure:
-     - Name: `studysync-backend`
-     - Root Directory: `server`
-     - Build Command: `npm install`
-     - Start Command: `npm start`
-     - Plan: Free
-
-2. **Add Environment Variables**
-   Add the same environment variables as in Option A.
-
-3. **Deploy**
-   - Click "Create Web Service"
-   - Wait for deployment to complete
-
----
-
-## Part 2: Frontend Deployment (Vercel)
-
-### Deploy with Vercel
-
-1. **Go to Vercel Dashboard**
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
-   - Click "Add New..." and select "Project"
-   - Import your GitHub repository
-
-2. **Configure Project**
-   - Framework Preset: `Vite`
-   - Root Directory: `client`
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-
-3. **Add Environment Variables**
-   In the Vercel dashboard, add:
-   ```
-   VITE_API_URL=https://your-backend-url.onrender.com
-   VITE_SOCKET_URL=https://your-backend-url.onrender.com
-   ```
-
-4. **Deploy**
-   - Click "Deploy"
-   - Wait for deployment to complete
-   - Your frontend will be available at `https://studysync.vercel.app`
-
----
-
-## Part 3: Update CORS Configuration
-
-Before deploying, ensure your backend CORS is configured for production:
-
-In `server/app.js`, update the CORS configuration:
-
-```javascript
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-app.use(cors(corsOptions));
-```
-
-Set the `FRONTEND_URL` environment variable in Render to your Vercel URL.
-
----
-
-## Part 4: Database Setup
-
-### Using MongoDB Atlas (Recommended)
-
-1. **Create a Cluster**
-   - Go to [MongoDB Atlas](https://cloud.mongodb.com)
-   - Create a free tier cluster
-
-2. **Create Database User**
-   - Go to "Database Access"
-   - Create a new user with read/write permissions
-
-3. **Network Access**
-   - Go to "Network Access"
-   - Add IP address `0.0.0.0/0` (allows all IPs) or specific Render IPs
-
-4. **Get Connection String**
-   - Go to "Database" > "Connect"
-   - Select "Connect your application"
-   - Copy the connection string
-   - Replace `<password>` with your database user's password
-
-5. **Add to Render**
-   - Add `MONGO_URI` environment variable with your connection string
-
-### Using Render's Managed Database
-
-If using Render's database (from render.yaml):
-- The database will be created automatically
-- Use `fromDatabase` in render.yaml to reference it
-- Render manages the connection string
-
----
-
-## Part 5: Cloudinary Setup
-
-1. **Go to Cloudinary Dashboard**
-   - Go to [Cloudinary Console](https://cloudinary.com/console)
-
-2. **Get Credentials**
-   - Cloud Name
-   - API Key
-   - API Secret
-
-3. **Add to Render**
-   Add these environment variables:
-   ```
-   CLOUDINARY_CLOUD_NAME=your-cloud-name
-   CLOUDINARY_API_KEY=your-api-key
-   CLOUDINARY_API_SECRET=your-api-secret
-   ```
-
----
-
-## Part 6: Update Frontend Environment
-
-Update `client/.env.production` or configure in Vercel:
-
-```env
-VITE_API_URL=https://your-backend-url.onrender.com
-VITE_SOCKET_URL=https://your-backend-url.onrender.com
-```
-
----
-
-## Part 7: Testing Production Build Locally
-
-Before deploying, test the production build:
+### 1. Push Code to GitHub
 
 ```bash
-# Build frontend
-cd client
-npm run build
+git add .
+git commit -m "Convert to serverless architecture"
+git push origin main
+```
 
-# Preview production build
-npm run preview
+### 2. Deploy to Vercel
 
-# Test with backend (update .env to point to production backend)
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "Add New..." → "Project"
+3. Import your GitHub repository
+4. Configure:
+
+   **Framework Preset:** Other
+   
+   **Root Directory:** . (root)
+   
+   **Build Command:** `npm run build`
+   
+   **Output Directory:** `client/dist`
+
+5. Click "Deploy"
+
+### 3. Configure Environment Variables
+
+In Vercel Dashboard → Settings → Environment Variables, add:
+
+```env
+# MongoDB
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/studysync?retryWrites=true&w=majority
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-min-32-characters
+JWT_EXPIRE=7d
+
+# Cloudinary (optional - for file uploads)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+
+### 4. Redeploy
+
+After adding environment variables, redeploy:
+1. Go to Vercel Dashboard
+2. Click on your project
+3. Click "Redeploy"
+
+---
+
+## API Endpoints (Serverless)
+
+After deployment, your API will be available at:
+
+```
+https://your-project.vercel.app/api/auth/register
+https://your-project.vercel.app/api/auth/login
+https://your-project.vercel.app/api/subjects
+https://your-project.vercel.app/api/notes
+https://your-project.vercel.app/api/chat/messages
+https://your-project.vercel.app/api/chat/send
 ```
 
 ---
 
-## Part 8: Deployment Checklist
+## Frontend Configuration
 
-- [ ] Backend deployed to Render
-- [ ] Frontend deployed to Vercel
-- [ ] All environment variables set
-- [ ] CORS configured for production URLs
+Update client/.env with your production URL:
+
+```env
+VITE_API_URL=https://your-project.vercel.app
+```
+
+---
+
+## Features Working with Serverless
+
+### ✅ Authentication
+- JWT-based login/register
+- Protected routes
+- Role-based access
+
+### ✅ Notes Management
+- Upload notes (file URL required)
+- Browse and download
+- Subject organization
+
+### ✅ Subjects
+- CRUD operations
+- Filtering by year/semester
+
+### ⚠️ Chat (Polling)
+- **Before:** Real-time WebSocket (Socket.io)
+- **After:** HTTP polling every 3 seconds
+- Still works but with slight delay
+- No WebSocket server needed
+
+---
+
+## Polling Implementation
+
+Instead of WebSockets, the chat now uses HTTP polling:
+
+```javascript
+// Frontend polls every 3 seconds
+useEffect(() => {
+  const interval = setInterval(fetchMessages, 3000);
+  return () => clearInterval(interval);
+}, [user]);
+```
+
+**Pros:**
+- Works with serverless
+- No WebSocket server needed
+- Simpler deployment
+
+**Cons:**
+- Not instant (3-second delay)
+- More HTTP requests
+
+---
+
+## Environment Variables
+
+### Required for Backend (api/package.json)
+
+```json
+{
+  "env": {
+    "MONGO_URI": "@mongo_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_EXPIRE": "7d"
+  }
+}
+```
+
+### Frontend (.env)
+
+```env
+VITE_API_URL=https://your-vercel-project.vercel.app
+```
+
+---
+
+## MongoDB Atlas Setup
+
+1. Create cluster at [MongoDB Atlas](https://cloud.mongodb.com)
+2. Create database user
+3. Network Access: Add IP `0.0.0.0/0` (all IPs)
+4. Get connection string
+5. Add to Vercel as `MONGO_URI`
+
+---
+
+## Cloudinary Setup (Optional for File Uploads)
+
+1. Get credentials from [Cloudinary Console](https://cloudinary.com/console)
+2. Add to Vercel:
+   - CLOUDINARY_CLOUD_NAME
+   - CLOUDINARY_API_KEY
+   - CLOUDINARY_API_SECRET
+
+**Note:** For file uploads, use Cloudinary's unsigned upload widget directly from frontend, then save the URL to our API.
+
+---
+
+## Testing Locally
+
+### Install Dependencies
+
+```bash
+# Root
+npm install
+
+# Backend
+cd api && npm install
+
+# Frontend
+cd client && npm install
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+This runs both frontend (port 5173) and backend (port 5000).
+
+---
+
+## Deployment Checklist
+
+- [ ] GitHub repository updated
+- [ ] Vercel project created
+- [ ] Environment variables configured
 - [ ] MongoDB Atlas connected
-- [ ] Cloudinary configured
-- [ ] Test authentication flow
-- [ ] Test notes upload
-- [ ] Test chat functionality
-- [ ] SSL/HTTPS working (automatic with Vercel and Render)
+- [ ] Build successful
+- [ ] API endpoints working
+- [ ] Frontend loads correctly
+- [ ] Authentication works
+- [ ] Notes upload/download works
+- [ ] Chat polling works
 
 ---
 
 ## Troubleshooting
 
+### 500 Error on API
+
+Check Vercel function logs:
+1. Dashboard → Functions
+2. Click on failing function
+3. Check error message
+
+Common issues:
+- Missing MONGO_URI
+- Invalid JWT_SECRET
+- MongoDB IP not allowed
+
 ### CORS Errors
-- Ensure `FRONTEND_URL` is set correctly in backend environment variables
-- Check that frontend URL matches exactly (no trailing slashes)
 
-### Socket.io Connection Issues
-- Ensure WebSocket is enabled in Render (should be by default)
-- Check that `VITE_SOCKET_URL` is correct in frontend
+CORS is configured in vercel.json. If issues persist:
+- Verify FRONTEND_URL matches your Vercel domain
+- Check browser console for specific error
 
-### File Upload Issues
-- Verify Cloudinary credentials
-- Check Cloudinary upload preset permissions
-- Ensure file size limits are appropriate (default: 10MB)
+### Chat Not Updating
 
-### JWT Token Issues
-- Ensure `JWT_SECRET` is the same in production
-- Check token expiration settings
+- Polling runs every 3 seconds
+- Check network tab for failed requests
+- Verify authentication token is sent
 
----
+### Build Fails
 
-## Production URLs
-
-After deployment, your URLs will be:
-- Frontend: `https://studysync-[random].vercel.app`
-- Backend: `https://studysync-backend.onrender.com`
-- API: `https://studysync-backend.onrender.com/api`
-- Socket.io: `https://studysync-backend.onrender.com`
+Check package.json versions:
+```json
+{
+  "dependencies": {
+    "mongoose": "^8.0.0"
+  }
+}
+```
 
 ---
 
-## Security Recommendations
+## Performance Tips
 
-1. **Use strong JWT_SECRET** - Generate a random 32+ character string
-2. **Keep secrets secure** - Never commit `.env` files
-3. **Limit file sizes** - Set reasonable upload limits
-4. **Validate file types** - Only allow PDF, DOC, DOCX, PPT, PPTX
-5. **Use HTTPS** - Automatic with Vercel and Render
+1. **Cold Starts:** Serverless functions may have 1-2s cold start
+2. **MongoDB Connection:** Reused across function invocations
+3. **Polling:** 3-second interval balances responsiveness and cost
 
 ---
 
-## Rollback Procedure
+## Cost Estimation (Free Tier)
 
-If deployment fails:
+| Service | Monthly Cost |
+|---------|--------------|
+| Vercel | Free (100GB bandwidth, functions) |
+| MongoDB Atlas | Free tier available |
+| Cloudinary | Free tier (25GB storage) |
 
-1. **Frontend Rollback**
-   - Go to Vercel Dashboard
-   - Select previous deployment
-   - Click "Redeploy"
+---
 
-2. **Backend Rollback**
-   - Go to Render Dashboard
-   - Select previous deployment
-   - Click "Deploy" on the desired version
+## Rollback
+
+1. Vercel Dashboard → Deployments
+2. Click on previous deployment
+3. Click "Redeploy"
 
 ---
 
 ## Support
 
 For issues:
-1. Check Render/Vercel logs
+1. Check Vercel function logs
 2. Verify environment variables
-3. Test locally with production settings
+3. Test API endpoints directly
 4. Check MongoDB Atlas logs
-5. Verify Cloudinary configuration
