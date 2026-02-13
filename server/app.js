@@ -12,9 +12,23 @@ const app = express();
 // Body parser
 app.use(express.json());
 
-// Enable CORS
+// Enable CORS - handle trailing slash issue
+const corsOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+// Strip trailing slash to avoid CORS mismatch
+const normalizedOrigin = corsOrigin.replace(/\/$/, '');
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Allow the origin with or without trailing slash
+    if (origin === normalizedOrigin || origin === corsOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 

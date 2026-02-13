@@ -15,9 +15,19 @@ connectDB();
 const server = http.createServer(app);
 
 // Initialize Socket.io
+const socketOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+const normalizedSocketOrigin = socketOrigin.replace(/\/$/, '');
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (origin === normalizedSocketOrigin || origin === socketOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST']
   }
 });
