@@ -11,10 +11,6 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "VITE_API_URL": "@api-url",
-    "VITE_SOCKET_URL": "@socket-url"
-  },
   "headers": [
     {
       "source": "/assets/(.*)",
