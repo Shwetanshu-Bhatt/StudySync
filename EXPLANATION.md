@@ -752,5 +752,3 @@ For issues or questions:
 5. Check Cloudinary quota
 
 ---
-
-**StudySync v1.0.0** - Built with ❤️ using MERN Stack

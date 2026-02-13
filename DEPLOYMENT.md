@@ -295,7 +295,6 @@ Check package.json versions:
 1. Vercel Dashboard → Deployments
 2. Click on previous deployment
 3. Click "Redeploy"
-
 ---
 
 ## Support
