@@ -1,12 +1,12 @@
 const User = require('../models/User');
 const { ErrorResponse } = require('../middleware/errorMiddleware');
 
-// @desc    Register user
+// @desc    Register user (students only - teachers added by admin)
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, year, branch } = req.body;
+    const { name, email, password, year, branch } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -17,12 +17,12 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create user
+    // Create user as student only
     const user = await User.create({
       name,
       email,
       password,
-      role: role || 'student',
+      role: 'student',
       year: year || 1,
       branch: branch || 'General'
     });
@@ -34,12 +34,58 @@ exports.register = async (req, res) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         year: user.year,
         branch: user.branch
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Admin create teacher
+// @route   POST /api/auth/create-teacher
+// @access  Private (Admin only)
+exports.createTeacher = async (req, res) => {
+  try {
+    const { name, email, password, assignedCourses } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already registered'
+      });
+    }
+
+    // Create user as teacher
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: 'teacher',
+      year: null,
+      branch: null,
+      assignedCourses: assignedCourses || []
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Teacher created successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        assignedCourses: user.assignedCourses
       }
     });
   } catch (error) {
@@ -90,7 +136,7 @@ exports.login = async (req, res) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -133,4 +179,24 @@ exports.logout = async (req, res) => {
     success: true,
     message: 'Logged out successfully'
   });
+};
+
+// @desc    Get all teachers
+// @route   GET /api/auth/teachers
+// @access  Private (Admin only)
+exports.getTeachers = async (req, res) => {
+  try {
+    const teachers = await User.find({ role: 'teacher' }).select('-password');
+
+    res.status(200).json({
+      success: true,
+      count: teachers.length,
+      teachers
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };

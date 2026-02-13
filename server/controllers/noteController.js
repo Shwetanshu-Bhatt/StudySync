@@ -1,5 +1,6 @@
 const Note = require('../models/Note');
 const Subject = require('../models/Subject');
+const Course = require('../models/Course');
 const { ErrorResponse } = require('../middleware/errorMiddleware');
 const { cloudinary } = require('../config/cloudinary');
 
@@ -15,7 +16,7 @@ exports.uploadNote = async (req, res) => {
       });
     }
 
-    const { title, subjectId, year, semester, branch, description } = req.body;
+    const { title, subjectId, courseId, year, semester, branch, description } = req.body;
 
     // Verify subject exists
     const subject = await Subject.findById(subjectId);
@@ -26,9 +27,19 @@ exports.uploadNote = async (req, res) => {
       });
     }
 
+    // Verify course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
     const note = await Note.create({
       title,
       subject: subjectId,
+      course: courseId,
       fileUrl: req.file.path,
       fileType: getFileType(req.file.mimetype),
       uploadedBy: req.user.id,
@@ -50,18 +61,101 @@ exports.uploadNote = async (req, res) => {
   }
 };
 
-// @desc    Get all notes
+// @desc    Get all notes (filtered by role and course)
 // @route   GET /api/notes
-// @access  Public
+// @access  Private
 exports.getNotes = async (req, res) => {
   try {
-    const { year, semester, branch, subject } = req.query;
+    const { courseId, year, semester, branch, subject } = req.query;
 
     // Build query object
     let query = {};
+
+    // Role-based filtering
+    if (req.user.role === 'student') {
+      // Students can only see notes from their enrolled course
+      if (req.user.course) {
+        query.course = req.user.course;
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          notes: [],
+          message: 'Please enroll in a course first'
+        });
+      }
+    } else if (req.user.role === 'teacher') {
+      // Teachers can only see notes from their assigned courses
+      if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
+        query.course = { $in: req.user.assignedCourses };
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          notes: [],
+          message: 'You are not assigned to any courses'
+        });
+      }
+    }
+    // Admin can see all notes
+
+    // Override with provided courseId if specified (for filtering)
+    if (courseId) {
+      query.course = courseId;
+    }
+
+    // Additional filters
     if (year) query.year = parseInt(year);
     if (semester) query.semester = parseInt(semester);
     if (branch) query.branch = branch;
+    if (subject) query.subject = subject;
+
+    const notes = await Note.find(query)
+      .populate('subject', 'name code')
+      .populate('course', 'name code')
+      .populate('uploadedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: notes.length,
+      notes
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get notes by course
+// @route   GET /api/notes/course/:courseId
+// @access  Private
+exports.getNotesByCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { year, semester, subject } = req.query;
+
+    // Verify user has access to this course
+    if (req.user.role === 'student' && req.user.course?.toString() !== courseId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view notes from this course'
+      });
+    }
+
+    if (req.user.role === 'teacher' && !req.user.assignedCourses?.includes(courseId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not assigned to this course'
+      });
+    }
+
+    let query = { course: courseId };
+
+    if (year) query.year = parseInt(year);
+    if (semester) query.semester = parseInt(semester);
     if (subject) query.subject = subject;
 
     const notes = await Note.find(query)
@@ -89,6 +183,7 @@ exports.getNote = async (req, res) => {
   try {
     const note = await Note.findById(req.params.id)
       .populate('subject', 'name code')
+      .populate('course', 'name code')
       .populate('uploadedBy', 'name');
 
     if (!note) {

@@ -12,6 +12,11 @@ const noteSchema = new mongoose.Schema({
     ref: 'Subject',
     required: true
   },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    required: true
+  },
   fileUrl: {
     type: String,
     required: [true, 'Please provide a file URL']
@@ -38,13 +43,21 @@ const noteSchema = new mongoose.Schema({
     min: 1,
     max: 8
   },
-  branch: {
-    type: String,
-    required: true
-  },
   description: {
     type: String,
     maxlength: [500, 'Description cannot exceed 500 characters']
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }],
+  downloads: {
+    type: Number,
+    default: 0
+  },
+  isPublic: {
+    type: Boolean,
+    default: true
   },
   createdAt: {
     type: Date,
@@ -53,8 +66,9 @@ const noteSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-noteSchema.index({ year: 1, semester: 1, branch: 1 });
+noteSchema.index({ course: 1 });
 noteSchema.index({ subject: 1 });
 noteSchema.index({ uploadedBy: 1 });
+noteSchema.index({ year: 1, semester: 1 });
 
 module.exports = mongoose.model('Note', noteSchema);

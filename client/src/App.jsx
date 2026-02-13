@@ -11,6 +11,10 @@ import Dashboard from './pages/Dashboard';
 import UploadNotes from './pages/UploadNotes';
 import BrowseNotes from './pages/BrowseNotes';
 import Subjects from './pages/Subjects';
+import ManageTeachers from './pages/ManageTeachers';
+import Courses from './pages/Courses';
+import Friends from './pages/Friends';
+import Chat from './pages/Chat';
 
 function App() {
   return (
@@ -50,6 +54,38 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Subjects />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/manage-teachers"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <ManageTeachers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/courses"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <Courses />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <Friends />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
                   </ProtectedRoute>
                 }
               />

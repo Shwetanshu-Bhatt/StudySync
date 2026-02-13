@@ -4,13 +4,16 @@ import api from '../api/axios';
 
 const UploadNotes = () => {
   const { user } = useAuth();
+  const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     subjectId: '',
-    year: user.year || 1,
+    courseId: '',
+    year: user?.year || 1,
     semester: 1,
-    branch: user.branch || '',
+    branch: user?.branch || '',
     description: '',
     file: null
   });
@@ -18,17 +21,46 @@ const UploadNotes = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchCourses = async () => {
       try {
-        const response = await api.get('/subjects');
-        setSubjects(response.data.subjects);
+        const response = await api.get('/courses');
+        setCourses(response.data.courses);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      if (!selectedCourse) {
+        setSubjects([]);
+        return;
+      }
+      
+      try {
+        const response = await api.get(`/courses/${selectedCourse}`);
+        setSubjects(response.data.course.subjects || []);
       } catch (error) {
         console.error('Error fetching subjects:', error);
+        setSubjects([]);
       }
     };
 
     fetchSubjects();
-  }, []);
+  }, [selectedCourse]);
+
+  const handleCourseChange = (e) => {
+    const courseId = e.target.value;
+    setSelectedCourse(courseId);
+    setFormData({
+      ...formData,
+      courseId,
+      subjectId: ''
+    });
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -49,10 +81,16 @@ const UploadNotes = () => {
     setLoading(true);
     setMessage({ type: '', text: '' });
 
+    if (!formData.courseId) {
+      setMessage({ type: 'error', text: 'Please select a course' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null) {
+        if (formData[key] !== null && formData[key] !== '') {
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -68,9 +106,10 @@ const UploadNotes = () => {
       setFormData({
         title: '',
         subjectId: '',
-        year: user.year || 1,
+        courseId: formData.courseId,
+        year: user?.year || 1,
         semester: 1,
-        branch: user.branch || '',
+        branch: user?.branch || '',
         description: '',
         file: null
       });
@@ -104,16 +143,21 @@ const UploadNotes = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Title
+              Course
             </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
+            <select
+              value={selectedCourse}
+              onChange={handleCourseChange}
               className="input"
               required
-            />
+            >
+              <option value="">Select a course</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.code} - {course.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-4">
@@ -126,6 +170,7 @@ const UploadNotes = () => {
               onChange={handleChange}
               className="input"
               required
+              disabled={!selectedCourse}
             >
               <option value="">Select a subject</option>
               {subjects.map((subject) => (
@@ -134,6 +179,20 @@ const UploadNotes = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className="input"
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">

@@ -5,19 +5,30 @@ import { useAuth } from '../context/AuthContext';
 const Subjects = () => {
   const { isTeacher, isAdmin } = useAuth();
   const [subjects, setSubjects] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
+    course: '',
     year: 1,
-    semester: 1,
-    branch: ''
+    semester: 1
   });
 
   useEffect(() => {
     fetchSubjects();
+    fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.courses);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+  };
 
   const fetchSubjects = async () => {
     try {
@@ -45,9 +56,9 @@ const Subjects = () => {
       setFormData({
         name: '',
         code: '',
+        course: '',
         year: 1,
-        semester: 1,
-        branch: ''
+        semester: 1
       });
       fetchSubjects();
     } catch (error) {
@@ -101,39 +112,46 @@ const Subjects = () => {
                 required
               />
             </div>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <select
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                className="input"
-              >
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
-                className="input"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                  <option key={sem} value={sem}>
-                    Sem {sem}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                name="branch"
-                placeholder="Branch"
-                value={formData.branch}
+                name="course"
+                value={formData.course}
                 onChange={handleChange}
                 className="input"
                 required
-              />
+              >
+                <option value="">Select Course</option>
+                {courses.map((course) => (
+                  <option key={course._id} value={course._id}>
+                    {course.name}
+                  </option>
+                ))}
+              </select>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  className="input"
+                >
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+                <select
+                  name="semester"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  className="input"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                    <option key={sem} value={sem}>
+                      Sem {sem}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <button type="submit" className="btn btn-primary w-full">
               Create Subject
@@ -160,7 +178,7 @@ const Subjects = () => {
                     <h4 className="font-semibold text-lg">{subject.name}</h4>
                     <p className="text-gray-600">{subject.code}</p>
                     <p className="text-sm text-gray-500 mt-2">
-                      Semester {subject.semester} | {subject.branch}
+                      Semester {subject.semester} | {subject.course?.name}
                     </p>
                   </div>
                 ))}

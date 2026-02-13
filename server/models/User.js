@@ -30,6 +30,17 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'teacher', 'admin'],
     default: 'student'
   },
+  // Course enrollment (for students)
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    default: null
+  },
+  // Assigned courses (for teachers)
+  assignedCourses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  }],
   year: {
     type: Number,
     min: 1,
@@ -39,6 +50,50 @@ const userSchema = new mongoose.Schema({
   branch: {
     type: String,
     default: 'General'
+  },
+  // Friends/connections
+  friends: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'blocked'],
+      default: 'pending'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  // Friend requests received
+  friendRequests: [{
+    from: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'declined'],
+      default: 'pending'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  avatar: {
+    type: String,
+    default: ''
+  },
+  isOnline: {
+    type: Boolean,
+    default: false
+  },
+  lastSeen: {
+    type: Date,
+    default: Date.now
   },
   createdAt: {
     type: Date,
@@ -60,12 +115,31 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method to generate JWT token
+// Method to generate JWT token with course info
 userSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
-    { id: this._id, role: this.role },
+    { 
+      id: this._id, 
+      role: this.role,
+      course: this.course,
+      assignedCourses: this.assignedCourses
+    },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
+  );
+};
+
+// Check if user is friend with another user
+userSchema.methods.isFriend = function(userId) {
+  return this.friends.some(f => 
+    f.user.toString() === userId.toString() && f.status === 'accepted'
+  );
+};
+
+// Check if user has pending friend request from another user
+userSchema.methods.hasPendingRequest = function(userId) {
+  return this.friendRequests.some(r => 
+    r.from.toString() === userId.toString() && r.status === 'pending'
   );
 };
 
