@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -14,8 +15,23 @@ const Signup = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
   const { register } = useAuth();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get('/courses');
+        if (response.data.success) {
+          setCourses(response.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -134,14 +150,20 @@ const Signup = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Branch</label>
-              <input
-                type="text"
+              <select
                 name="branch"
                 value={formData.branch}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-950/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                placeholder="Computer Science"
-              />
+                className="w-full px-4 py-3 bg-slate-950/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                required
+              >
+                <option value="">Select a Branch</option>
+                {courses.map((course) => (
+                  <option key={course._id} value={course._id}>
+                    {course.name} ({course.code})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

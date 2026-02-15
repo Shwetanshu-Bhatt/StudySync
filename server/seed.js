@@ -8,7 +8,7 @@ const Course = require('./models/Course');
 const Subject = require('./models/Subject');
 const Note = require('./models/Note');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/studysync';
+const MONGODB_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/studysync';
 
 const seedData = async () => {
   try {
