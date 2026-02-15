@@ -43,6 +43,10 @@ exports.getMyRooms = async (req, res) => {
     console.log('Found custom rooms:', customRooms.length);
     console.log('Found DM rooms:', dmRooms.length);
     
+    // Get room IDs to remove duplicates
+    const customRoomIds = new Set(customRooms.map(r => r._id.toString()));
+    const uniqueDmRooms = dmRooms.filter(r => !customRoomIds.has(r._id.toString()));
+    
     // Log room details for debugging
     customRooms.forEach(room => {
       const isCreator = room.createdBy?._id?.toString() === userId;
@@ -51,8 +55,8 @@ exports.getMyRooms = async (req, res) => {
       console.log(`Room "${room.name}": creator=${isCreator}, invited=${isInvited}, member=${isMember}`);
     });
     
-    // Combine rooms
-    const rooms = [...customRooms, ...dmRooms];
+    // Combine rooms (custom rooms first, then unique DM rooms)
+    const rooms = [...customRooms, ...uniqueDmRooms];
     
     res.status(200).json({
       success: true,

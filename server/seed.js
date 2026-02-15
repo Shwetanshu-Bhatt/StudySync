@@ -37,19 +37,22 @@ const seedData = async () => {
         name: 'Computer Science Engineering',
         code: 'CSE',
         description: '4-year Computer Science program',
-        duration: 4
+        duration: 4,
+        isActive: true
       },
       {
         name: 'Electronics Engineering',
         code: 'ECE',
         description: '4-year Electronics program',
-        duration: 4
+        duration: 4,
+        isActive: true
       },
       {
         name: 'Mechanical Engineering',
         code: 'ME',
         description: '4-year Mechanical program',
-        duration: 4
+        duration: 4,
+        isActive: true
       }
     ]);
     console.log('Created courses:', courses.map(c => c.code).join(', '));
