@@ -11,7 +11,9 @@ export const ChatProvider = ({ children }) => {
   const pollingIntervalRef = useRef(null);
   const lastMessageIdRef = useRef(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+    : 'http://localhost:5000';
 
   const getRoom = () => {
     if (!user) return null;

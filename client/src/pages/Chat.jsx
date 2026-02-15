@@ -52,7 +52,9 @@ const Chat = () => {
   }, [messages]);
 
   const initializeSocket = () => {
-    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL 
+      ? import.meta.env.VITE_SOCKET_URL.replace(/\/$/, '')
+      : 'http://localhost:5000';
     
     socketRef.current = io(SOCKET_URL, {
       transports: ['websocket', 'polling']
