@@ -14,9 +14,9 @@ const {
 } = require('../controllers/courseController');
 
 // Public routes
-router.get('/', protect, getCourses);
-router.get('/:id', protect, getCourse);
-router.get('/:id/teachers', protect, getCourseTeachers);
+router.get('/', getCourses);
+router.get('/:id', getCourse);
+router.get('/:id/teachers', getCourseTeachers);
 
 // Admin only routes
 router.post('/', protect, isAdmin, createCourse);

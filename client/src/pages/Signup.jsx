@@ -10,7 +10,7 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     year: 1,
-    branch: ''
+    course: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ const Signup = () => {
       try {
         const response = await api.get('/courses');
         if (response.data.success) {
-          setCourses(response.data.data);
+          setCourses(response.data.courses);
         }
       } catch (err) {
         console.error('Error fetching courses:', err);
@@ -151,8 +151,8 @@ const Signup = () => {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Branch</label>
               <select
-                name="branch"
-                value={formData.branch}
+                name="course"
+                value={formData.course}
                 onChange={handleChange}
                 className="w-full px-4 py-3 bg-slate-950/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 required
