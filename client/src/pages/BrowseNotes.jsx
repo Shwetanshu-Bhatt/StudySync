@@ -82,7 +82,7 @@ const BrowseNotes = () => {
             name="courseId"
             value={filters.courseId}
             onChange={handleFilterChange}
-            className="input"
+            className="input cursor-pointer"
           >
             <option value="">All Courses</option>
             {courses.map((course) => (
@@ -96,8 +96,7 @@ const BrowseNotes = () => {
             name="subjectId"
             value={filters.subjectId}
             onChange={handleFilterChange}
-            className="input"
-            disabled={!filters.courseId}
+            className="input cursor-pointer"
           >
             <option value="">All Subjects</option>
             {subjects.map((subject) => (
@@ -111,7 +110,7 @@ const BrowseNotes = () => {
             name="year"
             value={filters.year}
             onChange={handleFilterChange}
-            className="input"
+            className="input cursor-pointer"
           >
             <option value="">All Years</option>
             <option value="1">1st Year</option>
@@ -124,7 +123,7 @@ const BrowseNotes = () => {
             name="semester"
             value={filters.semester}
             onChange={handleFilterChange}
-            className="input"
+            className="input cursor-pointer"
           >
             <option value="">All Semesters</option>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (

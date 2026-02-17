@@ -73,8 +73,8 @@
   background: #475569;
 }
 
-/* Smooth transitions */
-* {
+/* Smooth transitions - only on specific elements */
+.btn, .card, .input, .transition-colors, .transition-all {
   transition-property: background-color, border-color, color, fill, stroke, opacity, transform, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
