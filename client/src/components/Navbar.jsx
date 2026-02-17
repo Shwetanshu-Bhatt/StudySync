@@ -17,8 +17,8 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: 'home', roles: ['student', 'teacher', 'admin'] },
     { path: '/browse-notes', label: 'Notes', icon: 'book', roles: ['student', 'teacher', 'admin'] },
     { path: '/upload-notes', label: 'Upload', icon: 'upload', roles: ['teacher', 'admin'] },
-    { path: '/courses', label: 'Courses', icon: 'bookmark', roles: ['student', 'teacher', 'admin'] },
-    { path: '/subjects', label: 'Subjects', icon: 'folder', roles: ['student', 'teacher', 'admin'] },
+    { path: '/courses', label: 'Courses', icon: 'bookmark', roles: ['teacher', 'admin'] },
+    { path: '/subjects', label: 'Subjects', icon: 'folder', roles: ['teacher', 'admin'] },
     { path: '/friends', label: 'Friends', icon: 'users', roles: ['student', 'teacher', 'admin'] },
     { path: '/chat', label: 'Chat', icon: 'message', roles: ['student', 'teacher', 'admin'] },
     { path: '/manage-teachers', label: 'Admin', icon: 'shield', roles: ['admin'] }

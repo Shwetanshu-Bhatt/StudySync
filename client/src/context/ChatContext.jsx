@@ -19,19 +19,43 @@ export const ChatProvider = ({ children }) => {
     return 'http://localhost:5000';
   })();
 
-  const getRoom = () => {
+  const getRoom = async () => {
     if (!user) return null;
-    return `${user.role}-room`;
+    
+    // For students - try to get their course-based chat room
+    if (user.role === 'student' && user.course) {
+      try {
+        // Check if a course room exists, if not return null
+        const response = await axios.get(`${API_URL}/api/chat/rooms`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        // Find a room where type is 'course' and it matches user's course
+        const courseRoom = response.data.rooms?.find(
+          r => r.type === 'course' && r.course?._id === user.course
+        );
+        
+        if (courseRoom) {
+          return courseRoom._id;
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
+    }
+    
+    return null;
   };
 
   const fetchMessages = async () => {
-    const room = getRoom();
-    if (!room) return;
+    const roomId = await getRoom();
+    if (!roomId) {
+      console.log('No chat room available for this user');
+      return;
+    }
 
     try {
-      const response = await axios.get(`${API_URL}/api/chat/messages`, {
+      const response = await axios.get(`${API_URL}/api/chat/rooms/${roomId}/messages`, {
         params: {
-          room,
           lastMessageId: lastMessageIdRef.current
         },
         headers: {
@@ -39,16 +63,16 @@ export const ChatProvider = ({ children }) => {
         }
       });
 
-      if (response.data.data.length > 0) {
+      if (response.data.messages && response.data.messages.length > 0) {
         setMessages((prev) => {
-          const newMessages = response.data.data.filter(
+          const newMessages = response.data.messages.filter(
             (msg) => !prev.find((p) => p._id === msg._id)
           );
           return [...prev, ...newMessages];
         });
 
         // Update last message ID for polling
-        const lastMsg = response.data.data[response.data.data.length - 1];
+        const lastMsg = response.data.messages[response.data.messages.length - 1];
         if (lastMsg) {
           lastMessageIdRef.current = lastMsg._id;
         }
@@ -59,13 +83,13 @@ export const ChatProvider = ({ children }) => {
   };
 
   const sendMessage = async (messageText) => {
-    const room = getRoom();
-    if (!room || !messageText.trim()) return;
+    const roomId = await getRoom();
+    if (!roomId || !messageText.trim()) return;
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/chat/send`,
-        { message: messageText, room },
+        `${API_URL}/api/chat/rooms/${roomId}/messages`,
+        { content: messageText },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -74,8 +98,8 @@ export const ChatProvider = ({ children }) => {
       );
 
       if (response.data.success) {
-        setMessages((prev) => [...prev, response.data.data]);
-        lastMessageIdRef.current = response.data.data._id;
+        setMessages((prev) => [...prev, response.data.message]);
+        lastMessageIdRef.current = response.data.message._id;
       }
 
       return response.data;
@@ -110,7 +134,7 @@ export const ChatProvider = ({ children }) => {
     sendMessage,
     isLoading,
     setMessages,
-    room: getRoom()
+    room: null // Room is fetched dynamically
   };
 
   return (

@@ -10,11 +10,11 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 const { authorize, canManageSubjects } = require('../middleware/roleMiddleware');
 
-// Public routes
-router.get('/', getSubjects);
-router.get('/:id', getSubject);
+// Protected routes - all require authentication
+router.get('/', protect, getSubjects);
+router.get('/:id', protect, getSubject);
 
-// Protected routes
+// Admin/Teacher routes
 router.post('/', protect, canManageSubjects, createSubject);
 router.put('/:id', protect, canManageSubjects, updateSubject);
 router.delete('/:id', protect, authorize('admin'), deleteSubject);

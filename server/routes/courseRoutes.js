@@ -13,7 +13,7 @@ const {
   getCourseTeachers
 } = require('../controllers/courseController');
 
-// Public routes
+// Public routes - no authentication required
 router.get('/', getCourses);
 router.get('/:id', getCourse);
 router.get('/:id/teachers', getCourseTeachers);

@@ -53,6 +53,5 @@ const subjectSchema = new mongoose.Schema({
 
 // Index for efficient queries
 subjectSchema.index({ course: 1, year: 1, semester: 1 });
-subjectSchema.index({ code: 1 });
 
 module.exports = mongoose.model('Subject', subjectSchema);

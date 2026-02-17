@@ -18,6 +18,25 @@ exports.uploadNote = async (req, res) => {
 
     const { title, subjectId, courseId, year, semester, branch, description } = req.body;
 
+    // Teacher can only upload to their assigned courses
+    if (req.user.role === 'teacher') {
+      const assignedCourseIds = req.user.assignedCourses?.map(c => c.toString()) || [];
+      if (!assignedCourseIds.includes(courseId)) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only upload notes to your assigned courses'
+        });
+      }
+    }
+
+    // Student cannot upload notes
+    if (req.user.role === 'student') {
+      return res.status(403).json({
+        success: false,
+        message: 'Students cannot upload notes'
+      });
+    }
+
     // Verify subject exists
     const subject = await Subject.findById(subjectId);
     if (!subject) {
@@ -71,40 +90,21 @@ exports.getNotes = async (req, res) => {
     // Build query object
     let query = {};
 
-    // Role-based filtering
+    // Role-based filtering - simplified for MVP
+    // Teachers and admins can filter by course, students can see all notes
     if (req.user.role === 'student') {
-      // Students can only see notes from their enrolled course
-      if (req.user.course) {
-        query.course = req.user.course;
-      } else {
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          notes: [],
-          message: 'Please enroll in a course first'
-        });
-      }
+      // Students can see all notes (for browsing)
+      // No additional filter needed
     } else if (req.user.role === 'teacher') {
       // Teachers can only see notes from their assigned courses
       if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
         query.course = { $in: req.user.assignedCourses };
-      } else {
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          notes: [],
-          message: 'You are not assigned to any courses'
-        });
       }
     }
     // Admin can see all notes
 
-    // Override with provided courseId if specified (for filtering)
-    if (courseId) {
-      query.course = courseId;
-    }
-
-    // Additional filters
+    // Apply filters from query params
+    if (courseId) query.course = courseId;
     if (year) query.year = parseInt(year);
     if (semester) query.semester = parseInt(semester);
     if (branch) query.branch = branch;

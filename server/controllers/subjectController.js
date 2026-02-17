@@ -3,14 +3,40 @@ const { ErrorResponse } = require('../middleware/errorMiddleware');
 
 // @desc    Get all subjects
 // @route   GET /api/subjects
-// @access  Public
+// @access  Private
 exports.getSubjects = async (req, res) => {
   try {
     const { year, branch } = req.query;
     
-    let query = {};
+    let query = { isActive: true };
+    
+    // Role-based filtering - students/teachers can only see subjects from their course
+    if (req.user.role === 'student') {
+      if (req.user.course) {
+        query.course = req.user.course;
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          subjects: [],
+          message: 'Please enroll in a course first'
+        });
+      }
+    } else if (req.user.role === 'teacher') {
+      if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
+        query.course = { $in: req.user.assignedCourses };
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          subjects: [],
+          message: 'You are not assigned to any courses'
+        });
+      }
+    }
+    // Admin can see all subjects
+
     if (year) query.year = parseInt(year);
-    if (branch) query.branch = branch;
 
     const subjects = await Subject.find(query).sort({ year: 1, semester: 1 });
 

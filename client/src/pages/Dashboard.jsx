@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import Chat from '../components/Chat';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -84,7 +83,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      <Chat />
+      {/* Chat widget removed from dashboard - use /chat page */}
     </div>
   );
 };

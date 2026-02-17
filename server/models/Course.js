@@ -37,7 +37,4 @@ const courseSchema = new mongoose.Schema({
   }
 });
 
-// Note: code field already has unique: true which creates an index automatically
-// No need for additional index here
-
 module.exports = mongoose.model('Course', courseSchema);

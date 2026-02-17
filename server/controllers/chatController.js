@@ -126,9 +126,74 @@ exports.createRoom = async (req, res) => {
 // @access  Private
 exports.getRoomMessages = async (req, res) => {
   try {
-    const { roomId } = req.params;
-    const { page = 1, limit = 50 } = req.query;
+    let { roomId } = req.params;
+    const { room: roomName, page = 1, limit = 50 } = req.query;
 
+    // If roomId is not in params, check query params for room name
+    if (!roomId && roomName) {
+      const foundRoom = await ChatRoom.findOne({ name: roomName });
+      if (!foundRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Room not found'
+        });
+      }
+      roomId = foundRoom._id;
+    }
+
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Room ID or room name required'
+      });
+    }
+
+    // Check if it's a virtual course room (using course ID directly)
+    const course = await Course.findById(roomId);
+    let isVirtualCourseRoom = false;
+    
+    if (course) {
+      // Virtual course room - validate access
+      const user = await User.findById(req.user.id);
+      if (user.role === 'student') {
+        // Students can only access their enrolled course
+        isVirtualCourseRoom = user.course?.toString() === roomId;
+      } else if (user.role === 'teacher') {
+        // Teachers can only access assigned courses
+        const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
+        isVirtualCourseRoom = assignedIds.includes(roomId);
+      } else if (user.role === 'admin') {
+        isVirtualCourseRoom = true;
+      }
+      
+      if (!isVirtualCourseRoom) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied to this course chat'
+        });
+      }
+      
+      // Get messages for virtual course room
+      const messages = await ChatMessage.find({ room: roomId })
+        .populate('sender', 'name email avatar')
+        .populate('replyTo', 'content sender')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+      const total = await ChatMessage.countDocuments({ room: roomId });
+
+      return res.status(200).json({
+        success: true,
+        count: messages.length,
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit),
+        messages: messages.reverse()
+      });
+    }
+
+    // Check if it's a ChatRoom document
     const room = await ChatRoom.findById(roomId);
     if (!room) {
       return res.status(404).json({
@@ -138,7 +203,7 @@ exports.getRoomMessages = async (req, res) => {
     }
 
     // Check if user has access
-    const hasAccess = room.members.some(m => m.user.toString() === req.user.id) ||
+    const hasAccess = room.members.some(m => m.user?.toString() === req.user.id) ||
       room.participants.includes(req.user.id) ||
       room.type === 'course' || room.type === 'subject';
 
@@ -182,6 +247,50 @@ exports.sendMessage = async (req, res) => {
     const { roomId } = req.params;
     const { content, type = 'text', fileUrl = '', fileName = '', replyTo = null } = req.body;
 
+    // Check if it's a virtual course room (using course ID directly)
+    const course = await Course.findById(roomId);
+    let isVirtualCourseRoom = false;
+    
+    if (course) {
+      // Virtual course room - validate access
+      const user = await User.findById(req.user.id);
+      if (user.role === 'student') {
+        isVirtualCourseRoom = user.course?.toString() === roomId;
+      } else if (user.role === 'teacher') {
+        const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
+        isVirtualCourseRoom = assignedIds.includes(roomId);
+      } else if (user.role === 'admin') {
+        isVirtualCourseRoom = true;
+      }
+      
+      if (!isVirtualCourseRoom) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied to this course chat'
+        });
+      }
+      
+      // Create message for virtual course room
+      const message = await ChatMessage.create({
+        room: roomId,
+        sender: req.user.id,
+        content,
+        type,
+        fileUrl,
+        fileName,
+        replyTo
+      });
+
+      const populatedMessage = await ChatMessage.findById(message._id)
+        .populate('sender', 'name email avatar')
+        .populate('replyTo', 'content sender');
+
+      return res.status(201).json({
+        success: true,
+        message: populatedMessage
+      });
+    }
+
     const room = await ChatRoom.findById(roomId);
     if (!room) {
       return res.status(404).json({
@@ -191,7 +300,7 @@ exports.sendMessage = async (req, res) => {
     }
 
     // Check if user has access
-    const hasAccess = room.members.some(m => m.user.toString() === req.user.id) ||
+    const hasAccess = room.members.some(m => m.user?.toString() === req.user.id) ||
       room.participants.includes(req.user.id) ||
       room.type === 'course' || room.type === 'subject';
 
@@ -413,6 +522,15 @@ exports.deleteMessage = async (req, res) => {
       });
     }
 
+    // Store room for broadcasting - ensure it's a string
+    const room = message.room ? message.room.toString() : null;
+    if (!room) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message has no room'
+      });
+    }
+
     // Only sender can delete
     if (message.sender.toString() !== req.user.id) {
       return res.status(403).json({
@@ -421,15 +539,25 @@ exports.deleteMessage = async (req, res) => {
       });
     }
 
-    message.content = 'This message has been deleted';
-    message.isDeleted = true;
-    await message.save();
+    // Actually delete the message (Telegram-style)
+    await ChatMessage.findByIdAndDelete(messageId);
+
+    // Emit socket event to delete message for everyone in the room
+    const io = req.app.get('io');
+    if (io) {
+      console.log(`Broadcasting messageDeleted to room: ${room}`);
+      io.to(room).emit('messageDeleted', {
+        messageId: messageId,
+        room: room
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Message deleted'
+      message: 'Message deleted for everyone'
     });
   } catch (error) {
+    console.error('Delete message error:', error);
     res.status(500).json({
       success: false,
       message: error.message

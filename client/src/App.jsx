@@ -3,6 +3,8 @@ import { AuthProvider } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ToastProvider } from './components/Toast';
+import { ConfirmProvider } from './components/ConfirmModal';
 
 // Pages
 import Login from './pages/Login';
@@ -19,92 +21,96 @@ import Chat from './pages/Chat';
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ChatProvider>
-          <Layout>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/upload-notes"
-                element={
-                  <ProtectedRoute allowedRoles={['teacher', 'admin']}>
-                    <UploadNotes />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/browse-notes"
-                element={
-                  <ProtectedRoute>
-                    <BrowseNotes />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/subjects"
-                element={
-                  <ProtectedRoute>
-                    <Subjects />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/manage-teachers"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <ManageTeachers />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/courses"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <Courses />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/friends"
-                element={
-                  <ProtectedRoute>
-                    <Friends />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chat"
-                element={
-                  <ProtectedRoute>
-                    <Chat />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route
-                path="*"
-                element={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center">
-                      <h1 className="text-4xl font-bold text-gray-800">404</h1>
-                      <p className="text-gray-600 mt-2">Page not found</p>
-                    </div>
-                  </div>
-                }
-              />
-            </Routes>
-          </Layout>
-        </ChatProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <ConfirmProvider>
+          <AuthProvider>
+            <ChatProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/upload-notes"
+                    element={
+                      <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                        <UploadNotes />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/browse-notes"
+                    element={
+                      <ProtectedRoute>
+                        <BrowseNotes />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/subjects"
+                    element={
+                      <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                        <Subjects />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/manage-teachers"
+                    element={
+                      <ProtectedRoute allowedRoles={['admin']}>
+                        <ManageTeachers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/courses"
+                    element={
+                      <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                        <Courses />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/friends"
+                    element={
+                      <ProtectedRoute>
+                        <Friends />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/chat"
+                    element={
+                      <ProtectedRoute>
+                        <Chat />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route
+                    path="*"
+                    element={
+                      <div className="min-h-screen flex items-center justify-center">
+                        <div className="text-center">
+                          <h1 className="text-4xl font-bold text-gray-800">404</h1>
+                          <p className="text-gray-600 mt-2">Page not found</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                </Routes>
+              </Layout>
+            </ChatProvider>
+          </AuthProvider>
+        </ConfirmProvider>
+      </ToastProvider>
     </Router>
   );
 }

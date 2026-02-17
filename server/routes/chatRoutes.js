@@ -35,6 +35,9 @@ router.get('/rooms/:roomId/messages', getRoomMessages);
 router.post('/rooms/:roomId/messages', sendMessage);
 router.delete('/messages/:messageId', deleteMessage);
 
+// Get messages by room name (for student-room, teacher-room)
+router.get('/messages', getRoomMessages);
+
 // DM
 router.post('/dm/:userId', getOrCreateDMRoom);
 

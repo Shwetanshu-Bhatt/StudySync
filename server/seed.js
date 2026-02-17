@@ -7,8 +7,9 @@ const User = require('./models/User');
 const Course = require('./models/Course');
 const Subject = require('./models/Subject');
 const Note = require('./models/Note');
+const ChatRoom = require('./models/ChatRoom');
 
-const MONGODB_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/studysync';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shwetanshubhatt_db_owner:hL1fSCz3pnt742e1@studysyncmain.0znirwf.mongodb.net/studysync';
 
 const seedData = async () => {
   try {
@@ -231,6 +232,45 @@ const seedData = async () => {
       }
     ]);
     console.log('Created sample notes');
+
+    // Create chat rooms for each course
+    const chatRooms = await ChatRoom.insertMany([
+      {
+        name: 'CSE Chat',
+        description: 'Computer Science Engineering Discussion',
+        type: 'course',
+        course: courses[0]._id,
+        isPrivate: false,
+        members: [
+          { user: teachers[0]._id, role: 'admin' },
+          { user: teachers[1]._id, role: 'member' }
+        ],
+        createdBy: teachers[0]._id
+      },
+      {
+        name: 'ECE Chat',
+        description: 'Electronics Engineering Discussion',
+        type: 'course',
+        course: courses[1]._id,
+        isPrivate: false,
+        members: [
+          { user: teachers[1]._id, role: 'admin' }
+        ],
+        createdBy: teachers[1]._id
+      },
+      {
+        name: 'ME Chat',
+        description: 'Mechanical Engineering Discussion',
+        type: 'course',
+        course: courses[2]._id,
+        isPrivate: false,
+        members: [
+          { user: teachers[2]._id, role: 'admin' }
+        ],
+        createdBy: teachers[2]._id
+      }
+    ]);
+    console.log('Created chat rooms:', chatRooms.map(r => r.name).join(', '));
 
     console.log('\n✅ Seed data created successfully!\n');
     console.log('Test Accounts:');

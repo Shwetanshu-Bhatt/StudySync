@@ -6,8 +6,8 @@ const { authorize, canUploadNotes } = require('../middleware/roleMiddleware');
 const { upload } = require('../config/cloudinary');
 
 // Public routes
-router.get('/', getNotes);
-router.get('/:id', getNote);
+router.get('/', protect, getNotes);
+router.get('/:id', protect, getNote);
 
 // Protected routes
 router.post('/', protect, canUploadNotes, upload.single('file'), uploadNote);

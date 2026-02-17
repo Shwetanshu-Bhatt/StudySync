@@ -1,12 +1,32 @@
 const Course = require('../models/Course');
 const User = require('../models/User');
+const Subject = require('../models/Subject');
 
 // @desc    Get all courses
 // @route   GET /api/courses
 // @access  Private
 exports.getCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ isActive: true }).sort({ name: 1 });
+    let query = { isActive: true };
+    
+    // Role-based filtering - simplified for MVP
+    // Teachers can only see assigned courses, students and admins see all
+    if (req.user.role === 'teacher') {
+      // Teachers can only see their assigned courses
+      if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
+        query._id = { $in: req.user.assignedCourses };
+      } else {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          courses: [],
+          message: 'You are not assigned to any courses'
+        });
+      }
+    }
+    // Students and admins can see all courses
+
+    const courses = await Course.find(query).sort({ name: 1 });
 
     res.status(200).json({
       success: true,
@@ -26,7 +46,10 @@ exports.getCourses = async (req, res) => {
 // @access  Private
 exports.getCourse = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate('subjects');
+    const course = await Course.findById(req.params.id);
+    
+    // Get subjects for this course
+    const subjects = await Subject.find({ course: req.params.id, isActive: true });
 
     if (!course) {
       return res.status(404).json({
@@ -37,7 +60,7 @@ exports.getCourse = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      course
+      course: { ...course.toObject(), subjects }
     });
   } catch (error) {
     res.status(500).json({

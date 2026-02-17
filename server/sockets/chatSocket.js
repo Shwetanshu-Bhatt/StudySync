@@ -164,7 +164,7 @@ module.exports = (io) => {
     });
 
     // Send message
-    socket.on('sendMessage', async ({ message, room }) => {
+    socket.on('sendMessage', async ({ message, room, replyTo }) => {
       const user = onlineUsers.get(socket.id);
       
       if (!user) {
@@ -187,7 +187,8 @@ module.exports = (io) => {
           room: room,
           sender: user.userId,
           senderName: user.name,
-          content: message.trim()
+          content: message.trim(),
+          replyTo: replyTo ? replyTo.id : null
         });
 
         // Broadcast to room
@@ -197,7 +198,8 @@ module.exports = (io) => {
           senderName: user.name,
           room: room,
           content: newMessage.content,
-          time: newMessage.createdAt
+          time: newMessage.createdAt,
+          replyTo: replyTo || null
         });
 
         console.log(`Message from ${user.name} (${user.role}) in room ${room}`);
