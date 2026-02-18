@@ -58,9 +58,11 @@ const Signup = () => {
 
     try {
       const { confirmPassword, course, ...userData } = formData;
-      // Map course (selected course ID) to branch for the API
-      const courseName = courses.find(c => c._id === course)?.name || '';
-      await register({ ...userData, branch: courseName || course });
+      // Send course ID as branch
+      await register({ 
+        ...userData, 
+        branch: course // Use course ID as branch
+      });
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

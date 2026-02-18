@@ -30,8 +30,8 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'teacher', 'admin'],
     default: 'student'
   },
-  // Course enrollment (for students)
-  course: {
+  // Branch/course enrollment (for students) - references Course model
+  branch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
     default: null
@@ -46,10 +46,6 @@ const userSchema = new mongoose.Schema({
     min: 1,
     max: 4,
     default: 1
-  },
-  branch: {
-    type: String,
-    default: 'General'
   },
   // Friends/connections
   friends: [{
@@ -115,13 +111,13 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method to generate JWT token with course info
+// Method to generate JWT token with branch info
 userSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
     { 
       id: this._id, 
       role: this.role,
-      course: this.course,
+      branch: this.branch ? this.branch.toString() : null,
       assignedCourses: this.assignedCourses
     },
     process.env.JWT_SECRET,

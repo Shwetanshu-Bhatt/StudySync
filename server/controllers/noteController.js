@@ -3,6 +3,7 @@ const Subject = require('../models/Subject');
 const Course = require('../models/Course');
 const { ErrorResponse } = require('../middleware/errorMiddleware');
 const { cloudinary } = require('../config/cloudinary');
+const mongoose = require('mongoose');
 
 // @desc    Upload note
 // @route   POST /api/notes
@@ -16,15 +17,25 @@ exports.uploadNote = async (req, res) => {
       });
     }
 
-    const { title, subjectId, courseId, year, semester, branch, description } = req.body;
+    const { title, subjectId, year, semester, branch, description } = req.body;
+
+    // Get branch from subject - teacher uploads to a specific branch via subject
+    const subject = await Subject.findById(subjectId).populate('course');
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subject not found'
+      });
+    }
+    const branchId = subject.course._id;
 
     // Teacher can only upload to their assigned courses
     if (req.user.role === 'teacher') {
       const assignedCourseIds = req.user.assignedCourses?.map(c => c.toString()) || [];
-      if (!assignedCourseIds.includes(courseId)) {
+      if (!assignedCourseIds.includes(branchId.toString())) {
         return res.status(403).json({
           success: false,
-          message: 'You can only upload notes to your assigned courses'
+          message: 'You can only upload notes to your assigned branches'
         });
       }
     }
@@ -37,34 +48,15 @@ exports.uploadNote = async (req, res) => {
       });
     }
 
-    // Verify subject exists
-    const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(404).json({
-        success: false,
-        message: 'Subject not found'
-      });
-    }
-
-    // Verify course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Course not found'
-      });
-    }
-
     const note = await Note.create({
       title,
       subject: subjectId,
-      course: courseId,
+      branch: branchId,
       fileUrl: req.file.path,
       fileType: getFileType(req.file.mimetype),
       uploadedBy: req.user.id,
-      year,
-      semester,
-      branch,
+      year: subject.year,
+      semester: subject.semester,
       description
     });
 
@@ -85,36 +77,74 @@ exports.uploadNote = async (req, res) => {
 // @access  Private
 exports.getNotes = async (req, res) => {
   try {
-    const { courseId, year, semester, branch, subject } = req.query;
+    const { courseId, year, semester, branch, subject, subjectId } = req.query;
 
     // Build query object
     let query = {};
 
-    // Role-based filtering - simplified for MVP
-    // Teachers and admins can filter by course, students can see all notes
+    // Role-based filtering - students only see notes from their enrolled branch
     if (req.user.role === 'student') {
-      // Students can see all notes (for browsing)
-      // No additional filter needed
+      // Students can only see notes from their enrolled branch
+      if (req.user.branch) {
+        // Convert to ObjectId if it's a valid string representation
+        const branchId = mongoose.Types.ObjectId.isValid(req.user.branch) 
+          ? new mongoose.Types.ObjectId(req.user.branch) 
+          : req.user.branch;
+        console.log('[DEBUG] Student branch from user:', req.user.branch, '-> converted:', branchId);
+        query.branch = branchId;
+      } else {
+        // Student has no branch enrolled - return empty
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          notes: [],
+          message: 'Please enroll in a branch first'
+        });
+      }
     } else if (req.user.role === 'teacher') {
       // Teachers can only see notes from their assigned courses
       if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
-        query.course = { $in: req.user.assignedCourses };
+        query.branch = { $in: req.user.assignedCourses };
       }
     }
     // Admin can see all notes
 
     // Apply filters from query params
-    if (courseId) query.course = courseId;
+    // Validate courseId/branchId if provided
+    if (courseId) {
+      if (mongoose.Types.ObjectId.isValid(courseId)) {
+        query.branch = new mongoose.Types.ObjectId(courseId);
+      } else {
+        // Invalid ID format - return empty results
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          notes: [],
+          message: 'Invalid branch ID format'
+        });
+      }
+    }
     if (year) query.year = parseInt(year);
     if (semester) query.semester = parseInt(semester);
-    if (branch) query.branch = branch;
-    if (subject) query.subject = subject;
+    if (branch) {
+      if (mongoose.Types.ObjectId.isValid(branch)) {
+        query.branch = new mongoose.Types.ObjectId(branch);
+      }
+    }
+    // Use 'subject' or 'subjectId' from query params
+    const subjectFilter = subject || subjectId;
+    if (subjectFilter && mongoose.Types.ObjectId.isValid(subjectFilter)) {
+      query.subject = new mongoose.Types.ObjectId(subjectFilter);
+    }
 
     const notes = await Note.find(query)
       .populate('subject', 'name code')
-      .populate('course', 'name code')
+      .populate('branch', 'name code')
       .populate('uploadedBy', 'name')
       .sort({ createdAt: -1 });
+
+    console.log('[DEBUG] Query:', JSON.stringify(query));
+    console.log('[DEBUG] Notes found:', notes.length);
 
     res.status(200).json({
       success: true,

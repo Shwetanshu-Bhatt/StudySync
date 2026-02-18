@@ -12,7 +12,7 @@ const noteSchema = new mongoose.Schema({
     ref: 'Subject',
     required: true
   },
-  course: {
+  branch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
     required: true
@@ -66,7 +66,7 @@ const noteSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
-noteSchema.index({ course: 1 });
+noteSchema.index({ branch: 1 });
 noteSchema.index({ subject: 1 });
 noteSchema.index({ uploadedBy: 1 });
 noteSchema.index({ year: 1, semester: 1 });

@@ -19,13 +19,23 @@ const BrowseNotes = () => {
     const fetchCourses = async () => {
       try {
         const response = await api.get('/courses');
-        setCourses(response.data.courses);
+        const allCourses = response.data.courses;
+        setCourses(allCourses);
+        
+        // For students, auto-select their enrolled branch (only if it's a valid ObjectId)
+        if (user?.role === 'student' && user?.branch) {
+          // Check if branch is a valid MongoDB ObjectId (24 hex chars)
+          const isObjectId = /^[0-9a-fA-F]{24}$/.test(user.branch);
+          if (isObjectId) {
+            setFilters(prev => ({ ...prev, courseId: user.branch }));
+          }
+        }
       } catch (error) {
         console.error('Error fetching courses:', error);
       }
     };
     fetchCourses();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -77,20 +87,26 @@ const BrowseNotes = () => {
       <h2 className="text-2xl font-bold mb-6">Browse Study Notes</h2>
 
       <div className="card mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <select
-            name="courseId"
-            value={filters.courseId}
-            onChange={handleFilterChange}
-            className="input cursor-pointer"
-          >
-            <option value="">All Courses</option>
-            {courses.map((course) => (
-              <option key={course._id} value={course._id}>
-                {course.code} - {course.name}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {user?.role === 'student' ? (
+            <div className="font-bold text-lg">
+              <span className="relative ml-4">Branch:</span> {courses.find(c => c._id === user?.branch)?.name || 'Not enrolled'}
+            </div>
+          ) : (
+            <select
+              name="courseId"
+              value={filters.courseId}
+              onChange={handleFilterChange}
+              className="input cursor-pointer"
+            >
+              <option value="">All Courses</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.code} - {course.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             name="subjectId"
@@ -157,16 +173,16 @@ const BrowseNotes = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">{note.title}</h3>
-                  {note.course && (
+                  {note.branch && (
                     <p className="text-sm text-blue-600 mb-1">
-                      📚 {note.course.name}
+                      📚 {note.branch?.name || note.branch}
                     </p>
                   )}
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-slate-400 mb-1">
                     📖 {note.subject?.name}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {note.branch} | Year {note.year} | Sem {note.semester}
+                  <p className="text-sm text-slate-500">
+                    {note.branch?.name || note.branch} | Year {note.year} | Sem {note.semester}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
                     Uploaded by: {note.uploadedBy?.name}

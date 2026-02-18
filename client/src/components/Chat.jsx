@@ -71,7 +71,7 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
+      <div className="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-slate-800">
         {messages.length === 0 ? (
           <p className="text-gray-500 text-center">No messages yet. Start the conversation!</p>
         ) : (
@@ -87,7 +87,7 @@ const Chat = () => {
                   className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     msg.senderName === user?.name
                       ? 'bg-blue-500 text-white'
-                      : 'bg-white text-gray-800 border'
+                      : 'bg-white text-white border'
                   }`}
                 >
                   <p className="text-sm">{msg.message}</p>

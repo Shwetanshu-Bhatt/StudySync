@@ -1,6 +1,7 @@
 const Course = require('../models/Course');
 const User = require('../models/User');
 const Subject = require('../models/Subject');
+const mongoose = require('mongoose');
 
 // @desc    Get all courses
 // @route   GET /api/courses
@@ -11,7 +12,9 @@ exports.getCourses = async (req, res) => {
     
     // Role-based filtering - simplified for MVP
     // Teachers can only see assigned courses, students and admins see all
-    if (req.user.role === 'teacher') {
+    // Check if user is authenticated and is a teacher
+    // Handle both ObjectId and string branch names
+    if (req.user && req.user.role === 'teacher') {
       // Teachers can only see their assigned courses
       if (req.user.assignedCourses && req.user.assignedCourses.length > 0) {
         query._id = { $in: req.user.assignedCourses };
@@ -46,6 +49,14 @@ exports.getCourses = async (req, res) => {
 // @access  Private
 exports.getCourse = async (req, res) => {
   try {
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid course ID format'
+      });
+    }
+    
     const course = await Course.findById(req.params.id);
     
     // Get subjects for this course
@@ -270,7 +281,7 @@ exports.enrollStudent = async (req, res) => {
       });
     }
 
-    student.course = course._id;
+    student.branch = course._id;
     await student.save();
 
     res.status(200).json({

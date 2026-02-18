@@ -26,11 +26,11 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold text-white">
           Welcome, {user.name}!
         </h1>
-        <p className="text-gray-600 mt-2">
-          {user.role === 'student' && `Browse notes for ${user.year}th Year - ${user.branch}`}
+        <p className="text-slate-400 mt-2">
+          {user.role === 'student' && `Browse notes for ${user.year}th Year`}
           {user.role === 'teacher' && 'Manage your subjects and upload notes'}
           {user.role === 'admin' && 'System Administration Dashboard'}
         </p>
@@ -40,16 +40,16 @@ const Dashboard = () => {
         {(user.role === 'teacher' || user.role === 'admin') && (
           <Link to="/upload-notes" className="card hover:shadow-lg transition-shadow">
             <h3 className="text-xl font-semibold text-blue-600">Upload Notes</h3>
-            <p className="text-gray-600 mt-2">Share study materials with students</p>
+            <p className="text-slate-400 mt-2">Share study materials with students</p>
           </Link>
         )}
         <Link to="/browse-notes" className="card hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-semibold text-green-600">Browse Notes</h3>
-          <p className="text-gray-600 mt-2">Find study materials by subject</p>
+          <p className="text-slate-400 mt-2">Find study materials by subject</p>
         </Link>
         <Link to="/subjects" className="card hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-semibold text-purple-600">View Subjects</h3>
-          <p className="text-gray-600 mt-2">Browse available subjects</p>
+          <p className="text-slate-400 mt-2">Browse available subjects</p>
         </Link>
       </div>
 
@@ -58,15 +58,15 @@ const Dashboard = () => {
         {loading ? (
           <div className="text-center py-4">Loading...</div>
         ) : recentNotes.length === 0 ? (
-          <p className="text-gray-600">No notes available yet.</p>
+          <p className="text-slate-400">No notes available yet.</p>
         ) : (
           <div className="space-y-3">
             {recentNotes.map((note) => (
-              <div key={note._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={note._id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg border">
                 <div>
                   <h4 className="font-medium">{note.title}</h4>
-                  <p className="text-sm text-gray-600">
-                    {note.subject?.name} - {note.branch} Year {note.semester}
+                  <p className="text-sm text-slate-400">
+                    {note.subject?.name} - {note.branch?.name || note.branch} Year {note.semester}
                   </p>
                 </div>
                 <a

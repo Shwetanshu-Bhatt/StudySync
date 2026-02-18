@@ -17,14 +17,19 @@ exports.register = async (req, res) => {
       });
     }
 
+    // branch is the course ID from the dropdown
     // Create user as student only
+    // Convert branch string to ObjectId if provided
+    const mongoose = require('mongoose');
+    const branchId = branch && mongoose.Types.ObjectId.isValid(branch) ? new mongoose.Types.ObjectId(branch) : null;
+    
     const user = await User.create({
       name,
       email,
       password,
       role: 'student',
       year: year || 1,
-      branch: branch || 'General'
+      branch: branchId
     });
 
     // Generate token
@@ -39,7 +44,7 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         year: user.year,
-        branch: user.branch
+        branch: user.branch ? user.branch.toString() : null
       }
     });
   } catch (error) {
@@ -141,7 +146,7 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         year: user.year,
-        branch: user.branch
+        branch: user.branch ? user.branch.toString() : null
       }
     });
   } catch (error) {

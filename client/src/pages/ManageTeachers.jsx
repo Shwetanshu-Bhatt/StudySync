@@ -137,7 +137,7 @@ const ManageTeachers = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Full Name
               </label>
               <input
@@ -151,7 +151,7 @@ const ManageTeachers = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Email
               </label>
               <input
@@ -165,7 +165,7 @@ const ManageTeachers = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Password
               </label>
               <input
@@ -180,7 +180,7 @@ const ManageTeachers = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Confirm Password
               </label>
               <input
@@ -194,7 +194,7 @@ const ManageTeachers = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Assign Courses (select multiple)
               </label>
               <div className="max-h-40 overflow-y-auto border rounded p-2">
@@ -229,7 +229,7 @@ const ManageTeachers = () => {
           <h2 className="text-xl font-bold mb-4">Existing Teachers</h2>
           
           {teachers.length === 0 ? (
-            <p className="text-gray-600">No teachers found.</p>
+            <p className="text-slate-400">No teachers found.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -274,13 +274,13 @@ const ManageTeachers = () => {
       {/* Assign Courses Modal */}
       {selectedTeacher && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="card w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">
               Assign Courses to {selectedTeacher.name}
             </h2>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-slate-300 text-sm font-bold mb-2">
                 Select Courses
               </label>
               <div className="max-h-60 overflow-y-auto border rounded p-2">
@@ -313,7 +313,7 @@ const ManageTeachers = () => {
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setSelectedTeacher(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-slate-400 hover:text-white"
               >
                 Cancel
               </button>

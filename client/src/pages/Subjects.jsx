@@ -164,7 +164,7 @@ const Subjects = () => {
         <div className="text-center py-8">Loading...</div>
       ) : Object.keys(groupedSubjects).length === 0 ? (
         <div className="card text-center py-8">
-          <p className="text-gray-600">No subjects available.</p>
+          <p className="text-slate-400">No subjects available.</p>
         </div>
       ) : (
         Object.entries(groupedSubjects)
@@ -176,7 +176,7 @@ const Subjects = () => {
                 {yearSubjects.map((subject) => (
                   <div key={subject._id} className="card">
                     <h4 className="font-semibold text-lg">{subject.name}</h4>
-                    <p className="text-gray-600">{subject.code}</p>
+                    <p className="text-slate-400">{subject.code}</p>
                     <p className="text-sm text-gray-500 mt-2">
                       Semester {subject.semester} | {subject.course?.name}
                     </p>

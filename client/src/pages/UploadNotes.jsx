@@ -58,8 +58,35 @@ const UploadNotes = () => {
     setFormData({
       ...formData,
       courseId,
-      subjectId: ''
+      subjectId: '',
+      branch: ''
     });
+  };
+
+  const handleSubjectChange = (e) => {
+    const subjectId = e.target.value;
+    const selectedSubject = subjects.find(s => s._id === subjectId);
+    const selectedCourseObj = courses.find(c => c._id === selectedSubject?.course);
+    
+    if (selectedSubject) {
+      // Auto-fill year and semester from subject, and branch from subject's course
+      setFormData({
+        ...formData,
+        subjectId,
+        courseId: selectedSubject.course,
+        year: selectedSubject.year,
+        semester: selectedSubject.semester,
+        branch: selectedCourseObj?.name || ''
+      });
+      // Also update selected course to match
+      setSelectedCourse(selectedSubject.course);
+    } else {
+      setFormData({
+        ...formData,
+        subjectId,
+        branch: ''
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -142,7 +169,7 @@ const UploadNotes = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block text-slate-300 text-sm font-bold mb-2">
               Course
             </label>
             <select
@@ -161,13 +188,13 @@ const UploadNotes = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block text-slate-300 text-sm font-bold mb-2">
               Subject
             </label>
             <select
               name="subjectId"
               value={formData.subjectId}
-              onChange={handleChange}
+              onChange={handleSubjectChange}
               className="input"
               required
               disabled={!selectedCourse}
@@ -182,7 +209,7 @@ const UploadNotes = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block text-slate-300 text-sm font-bold mb-2">
               Title
             </label>
             <input
@@ -195,61 +222,8 @@ const UploadNotes = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Year
-              </label>
-              <select
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                className="input"
-                required
-              >
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Semester
-              </label>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
-                className="input"
-                required
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                  <option key={sem} value={sem}>
-                    Semester {sem}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Branch
-            </label>
-            <input
-              type="text"
-              name="branch"
-              value={formData.branch}
-              onChange={handleChange}
-              className="input"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block text-slate-300 text-sm font-bold mb-2">
               Description (optional)
             </label>
             <textarea
@@ -262,7 +236,7 @@ const UploadNotes = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
+            <label className="block text-slate-300 text-sm font-bold mb-2">
               File (PDF, DOC, PPT)
             </label>
             <input

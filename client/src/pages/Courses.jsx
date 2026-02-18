@@ -84,7 +84,7 @@ const Courses = () => {
       {/* Course Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
-          <div key={course._id} className="bg-white rounded-lg shadow-md p-6">
+          <div key={course._id} className="card">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-semibold">{course.name}</h3>
@@ -101,7 +101,7 @@ const Courses = () => {
                 </button>
               )}
             </div>
-            <p className="text-gray-600 mb-4">{course.description || 'No description'}</p>
+            <p className="text-slate-400 mb-4">{course.description || 'No description'}</p>
             <div className="flex justify-between text-sm text-gray-500">
               <span>Duration: {course.duration} years</span>
               <span>{course.subjects?.length || 0} subjects</span>
@@ -113,11 +113,11 @@ const Courses = () => {
       {/* Add Course Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="card w-full max-w-md">
             <h2 className="text-xl font-semibold mb-4">Add New Course</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Course Name</label>
+                <label className="block text-slate-300 mb-2">Course Name</label>
                 <input
                   type="text"
                   name="name"
@@ -128,7 +128,7 @@ const Courses = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Course Code</label>
+                <label className="block text-slate-300 mb-2">Course Code</label>
                 <input
                   type="text"
                   name="code"
@@ -139,7 +139,7 @@ const Courses = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Description</label>
+                <label className="block text-slate-300 mb-2">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -149,12 +149,12 @@ const Courses = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Duration (years)</label>
+                <label className="block text-slate-300 mb-2">Duration (years)</label>
                 <select
                   name="duration"
                   value={formData.duration}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-lg cursor-pointer bg-slate-800 text-white border-slate-600"
                 >
                   <option value={2}>2 Years</option>
                   <option value={3}>3 Years</option>
@@ -165,7 +165,7 @@ const Courses = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-4 py-2 text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
