@@ -23,7 +23,13 @@ module.exports = (io) => {
 
       try {
         // Get user with course info
-        const user = await User.findById(userId).populate('course assignedCourses');
+        const user = await User.findById(userId).populate('branch assignedCourses');
+        
+        console.log('[DEBUG] joinRoom - userId:', userId);
+        console.log('[DEBUG] joinRoom - user.branch:', user?.branch);
+        console.log('[DEBUG] joinRoom - user.branch.toString():', user?.branch?.toString());
+        console.log('[DEBUG] joinRoom - roomId:', roomId);
+        console.log('[DEBUG] joinRoom - role:', role);
         
         if (!user) {
           console.log('User not found');
@@ -36,6 +42,7 @@ module.exports = (io) => {
           
           // Check if it's a custom room, DM room, or course room
           const chatRoom = await ChatRoom.findById(roomId);
+          console.log('[DEBUG] chatRoom found:', chatRoom);
           
           if (chatRoom) {
             // Check room type
@@ -59,7 +66,7 @@ module.exports = (io) => {
               // Course room - validate access based on role
               if (role === 'student') {
                 // Students can only join their enrolled course
-                canJoin = user.course?.toString() === roomId;
+                canJoin = user.branch?._id?.toString() === roomId;
                 roomType = 'course';
               } else if (role === 'teacher') {
                 // Teachers can join courses they are assigned to
@@ -75,12 +82,13 @@ module.exports = (io) => {
           } else {
             // Check if it's a course room (course ID as room)
             const course = await Course.findById(roomId);
+            console.log('[DEBUG] course found:', course);
             
             if (course) {
               // Course room - validate access based on role
               if (role === 'student') {
                 // Students can only join their enrolled course
-                canJoin = user.course?.toString() === roomId;
+                canJoin = user.branch?._id?.toString() === roomId;
                 roomType = 'course';
               } else if (role === 'teacher') {
                 // Teachers can join courses they are assigned to
@@ -96,7 +104,7 @@ module.exports = (io) => {
           }
         } else {
           // No room specified - default to user's course room
-          if (user.course) {
+          if (user.branch) {
             room = user.branch.toString();
             canJoin = true;
             roomType = 'course';

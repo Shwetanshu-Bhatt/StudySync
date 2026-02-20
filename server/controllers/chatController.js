@@ -160,7 +160,7 @@ exports.getRoomMessages = async (req, res) => {
       console.log('[DEBUG] User branch:', user.branch, 'roomId:', roomId);
       if (user.role === 'student') {
         // Students can only access their enrolled course
-        isVirtualCourseRoom = user.branch?.toString() === roomId;
+        isVirtualCourseRoom = user.branch?._id?.toString() === roomId;
       } else if (user.role === 'teacher') {
         // Teachers can only access assigned courses
         const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
@@ -261,7 +261,7 @@ exports.sendMessage = async (req, res) => {
       console.log('[DEBUG] User branch in sendMessage:', user.branch, 'roomId:', roomId);
       if (user.role === 'student') {
         // BUG FIX: Use branch instead of course
-        isVirtualCourseRoom = user.branch?.toString() === roomId;
+        isVirtualCourseRoom = user.branch?._id?.toString() === roomId;
       } else if (user.role === 'teacher') {
         const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
         isVirtualCourseRoom = assignedIds.includes(roomId);
