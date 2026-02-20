@@ -12,14 +12,14 @@ exports.getSubjects = async (req, res) => {
     
     // Role-based filtering - students/teachers can only see subjects from their course
     if (req.user.role === 'student') {
-      if (req.user.course) {
-        query.course = req.user.course;
+      if (req.user.branch) {
+        query.course = req.user.branch;
       } else {
         return res.status(200).json({
           success: true,
           count: 0,
           subjects: [],
-          message: 'Please enroll in a course first'
+          message: 'Please enroll in a branch first'
         });
       }
     } else if (req.user.role === 'teacher') {
@@ -38,7 +38,11 @@ exports.getSubjects = async (req, res) => {
 
     if (year) query.year = parseInt(year);
 
-    const subjects = await Subject.find(query).sort({ year: 1, semester: 1 });
+    const subjects = await Subject.find(query)
+      .populate('course', 'name code')
+      .sort({ year: 1, semester: 1 });
+
+    console.log('[DEBUG] Fetched subjects with populated course:', subjects.length);
 
     res.status(200).json({
       success: true,

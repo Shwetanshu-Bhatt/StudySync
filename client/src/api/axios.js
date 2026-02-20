@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: (() => {
     const envUrl = import.meta.env.VITE_API_URL;
     if (envUrl) {
-      // Remove trailing slash and /api if present, then add /api
       const cleanUrl = envUrl.replace(/\/$/, '').replace(/\/api$/, '');
       return cleanUrl + '/api';
     }

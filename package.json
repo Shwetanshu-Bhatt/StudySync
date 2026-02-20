@@ -3,22 +3,11 @@
   "version": "1.0.0",
   "description": "StudySync - Academic Platform with MERN Stack",
   "private": true,
-  "workspaces": [
-    "client",
-    "api"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:api\"",
-    "dev:client": "npm run dev --workspace=client",
-    "dev:api": "npm run dev --workspace=api",
-    "build": "npm run build --workspace=client",
-    "start": "npm run start --workspace=api"
+    "dev": "echo 'Run cd client && npm run dev for frontend, cd server && npm start for backend'",
+    "install:all": "cd client && npm install && cd ../server && npm install"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
-  },
-  "dependencies": {
-    "cloudinary": "^2.9.0",
-    "next-cloudinary": "^6.17.5"
   }
 }

@@ -97,7 +97,7 @@ module.exports = (io) => {
         } else {
           // No room specified - default to user's course room
           if (user.course) {
-            room = user.course.toString();
+            room = user.branch.toString();
             canJoin = true;
             roomType = 'course';
           }

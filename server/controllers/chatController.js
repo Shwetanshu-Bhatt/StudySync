@@ -1,3 +1,4 @@
+const Course = require('../models/Course');
 const ChatRoom = require('../models/ChatRoom');
 const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
@@ -153,11 +154,13 @@ exports.getRoomMessages = async (req, res) => {
     let isVirtualCourseRoom = false;
     
     if (course) {
+      console.log('[DEBUG] Virtual course room found:', course.name);
       // Virtual course room - validate access
       const user = await User.findById(req.user.id);
+      console.log('[DEBUG] User branch:', user.branch, 'roomId:', roomId);
       if (user.role === 'student') {
         // Students can only access their enrolled course
-        isVirtualCourseRoom = user.course?.toString() === roomId;
+        isVirtualCourseRoom = user.branch?.toString() === roomId;
       } else if (user.role === 'teacher') {
         // Teachers can only access assigned courses
         const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
@@ -252,10 +255,13 @@ exports.sendMessage = async (req, res) => {
     let isVirtualCourseRoom = false;
     
     if (course) {
+      console.log('[DEBUG] Virtual course room found in sendMessage:', course.name);
       // Virtual course room - validate access
       const user = await User.findById(req.user.id);
+      console.log('[DEBUG] User branch in sendMessage:', user.branch, 'roomId:', roomId);
       if (user.role === 'student') {
-        isVirtualCourseRoom = user.course?.toString() === roomId;
+        // BUG FIX: Use branch instead of course
+        isVirtualCourseRoom = user.branch?.toString() === roomId;
       } else if (user.role === 'teacher') {
         const assignedIds = user.assignedCourses?.map(c => c.toString()) || [];
         isVirtualCourseRoom = assignedIds.includes(roomId);

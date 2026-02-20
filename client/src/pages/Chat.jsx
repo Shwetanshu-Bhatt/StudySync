@@ -147,10 +147,10 @@ const Chat = () => {
     try {
       let accessibleRooms = [];
       
-      if (user.role === 'student' && user.course) {
-        const courseRes = await api.get(`/courses/${user.course}`);
+      if (user.role === 'student' && user.branch) {
+        const courseRes = await api.get(`/courses/${user.branch}`);
         const courseRoom = {
-          _id: user.course,
+          _id: user.branch,
           name: courseRes.data.course.name + ' Chat',
           type: 'course',
           isDefault: true
