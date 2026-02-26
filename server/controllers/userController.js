@@ -1,4 +1,24 @@
 const User = require('../models/User');
+const { cloudinary } = require('../config/cloudinary');
+
+// @desc    Get current user profile
+// @route   GET /api/users/me
+// @access  Private
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+
+    res.status(200).json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 // @desc    Get user profile
 // @route   GET /api/users/profile/:id
@@ -344,8 +364,7 @@ exports.searchUsers = async (req, res) => {
     }
 
     const users = await User.find(query)
-      .select('name email avatar role course year')
-      .limit(50);
+      .select('name email avatar role branch year');
 
     res.status(200).json({
       success: true,
@@ -378,6 +397,60 @@ exports.updateProfile = async (req, res) => {
       user
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Upload avatar image
+// @route   POST /api/users/avatar
+// @access  Private
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload an image'
+      });
+    }
+
+    // Upload to cloudinary with unique public_id using timestamp
+    const timestamp = Date.now();
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: 'studysync-avatars',
+          resource_type: 'image',
+          public_id: `avatar_${req.user.id}_${timestamp}`,
+          overwrite: false
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
+
+    const avatarUrl = result.secure_url;
+    console.log('Uploaded avatar for user', req.user.id, '->', avatarUrl);
+    console.log('Updating user ID:', req.user.id, 'with avatar:', avatarUrl);
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar: avatarUrl },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    console.log('Updated user avatar:', user._id, '->', user.avatar);
+
+    res.status(200).json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
     res.status(500).json({
       success: false,
       message: error.message

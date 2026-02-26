@@ -9,7 +9,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Create storage engine for Cloudinary
+// Create storage engine for Cloudinary - Notes/Documents
 const cloudStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -36,7 +36,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Create multer upload instance
+// Create multer upload instance for documents
 const upload = multer({
   storage: cloudStorage,
   fileFilter: fileFilter,

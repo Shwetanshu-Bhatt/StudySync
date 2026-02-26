@@ -17,6 +17,7 @@ import ManageTeachers from './pages/ManageTeachers';
 import Courses from './pages/Courses';
 import Friends from './pages/Friends';
 import Chat from './pages/Chat';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -90,6 +91,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <Chat />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
                       </ProtectedRoute>
                     }
                   />

@@ -29,8 +29,11 @@ exports.register = async (req, res) => {
       password,
       role: 'student',
       year: year || 1,
-      branch: branchId
+      branch: branchId,
+      avatar: ''
     });
+
+    console.log('New user created:', user._id, 'Avatar:', user.avatar);
 
     // Generate token
     const token = user.getSignedJwtToken();
@@ -44,7 +47,8 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
         year: user.year,
-        branch: user.branch ? user.branch.toString() : null
+        branch: user.branch ? user.branch.toString() : null,
+        avatar: user.avatar || null
       }
     });
   } catch (error) {
@@ -125,6 +129,8 @@ exports.login = async (req, res) => {
       });
     }
 
+    console.log('Login - User:', user._id, 'Avatar:', user.avatar);
+
     // Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
@@ -146,7 +152,9 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         year: user.year,
-        branch: user.branch ? user.branch.toString() : null
+        branch: user.branch ? user.branch.toString() : null,
+        avatar: user.avatar || null,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {

@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { protect, isAdmin } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const { cloudinary } = require('../config/cloudinary');
 const {
+  getMe,
   getUserProfile,
   getFriends,
   getFriendRequests,
@@ -11,16 +14,25 @@ const {
   removeFriend,
   searchUsers,
   updateProfile,
+  uploadAvatar: uploadAvatarController,
   getOnlineUsers,
   assignCoursesToTeacher
 } = require('../controllers/userController');
 
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 // All routes require authentication
 router.use(protect);
+
+// Current user
+router.get('/me', getMe);
 
 // User profile
 router.get('/profile/:id', getUserProfile);
 router.put('/profile', updateProfile);
+router.post('/avatar', upload.single('avatar'), uploadAvatarController);
 
 // Friends
 router.get('/friends', getFriends);

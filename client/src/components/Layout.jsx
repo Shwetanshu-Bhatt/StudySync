@@ -2,9 +2,11 @@ import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-[#0f0a1a]">
       <Navbar />
-      <main>{children}</main>
+      <main className="pt-16 lg:pt-20">
+        {children}
+      </main>
     </div>
   );
 };

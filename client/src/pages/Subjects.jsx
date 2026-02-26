@@ -62,7 +62,7 @@ const Subjects = () => {
       });
       fetchSubjects();
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to create subject');
+      console.error('Error creating subject:', error);
     }
   };
 
@@ -75,64 +75,80 @@ const Subjects = () => {
   }, {});
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Subjects</h2>
-        {(isTeacher || isAdmin) && (
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="btn btn-primary"
-          >
-            {showForm ? 'Cancel' : 'Add Subject'}
-          </button>
-        )}
+    <div className="min-h-screen pb-12 px-4 sm:px-6 lg:px-8">
+      {/* Background decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-accent-500/5 rounded-full blur-3xl" />
       </div>
+      <div className="max-w-7xl mx-auto relative">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 animate-fade-in-up">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              <span className="text-brand-gradient">Subjects</span> Management
+            </h1>
+            <p className="text-slate-400">View and manage all subjects</p>
+          </div>
+          {(isTeacher || isAdmin) && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-gradient text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-lg shadow-primary-500/25 hover:scale-105"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {showForm ? 'Cancel' : 'Add Subject'}
+            </button>
+          )}
+        </div>
 
-      {showForm && (
-        <div className="card mb-6 max-w-xl mx-auto">
-          <h3 className="text-lg font-semibold mb-4">Add New Subject</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="Subject Name"
-                value={formData.name}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-              <input
-                type="text"
-                name="code"
-                placeholder="Subject Code"
-                value={formData.code}
-                onChange={handleChange}
-                className="input"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <select
-                name="course"
-                value={formData.course}
-                onChange={handleChange}
-                className="input"
-                required
-              >
-                <option value="">Select Course</option>
-                {courses.map((course) => (
-                  <option key={course._id} value={course._id}>
-                    {course.name}
-                  </option>
-                ))}
-              </select>
-              <div className="grid grid-cols-2 gap-2">
+        {/* Add Subject Form */}
+        {showForm && (
+          <div className="glass-card p-6 mb-8 animate-fade-in-up">
+            <h3 className="text-lg font-semibold text-white mb-4">Add New Subject</h3>
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Subject Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50"
+                  required
+                />
+                <input
+                  type="text"
+                  name="code"
+                  placeholder="Subject Code"
+                  value={formData.code}
+                  onChange={handleChange}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <select
+                  name="course"
+                  value={formData.course}
+                  onChange={handleChange}
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500/50 cursor-pointer"
+                  required
+                >
+                  <option value="">Select Course</option>
+                  {courses.map((course) => (
+                    <option key={course._id} value={course._id}>
+                      {course.name}
+                    </option>
+                  ))}
+                </select>
                 <select
                   name="year"
                   value={formData.year}
                   onChange={handleChange}
-                  className="input"
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500/50 cursor-pointer"
                 >
                   <option value="1">1st Year</option>
                   <option value="2">2nd Year</option>
@@ -143,49 +159,82 @@ const Subjects = () => {
                   name="semester"
                   value={formData.semester}
                   onChange={handleChange}
-                  className="input"
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary-500/50 cursor-pointer"
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
                     <option key={sem} value={sem}>
-                      Sem {sem}
+                      Semester {sem}
                     </option>
                   ))}
                 </select>
               </div>
-            </div>
-            <button type="submit" className="btn btn-primary w-full">
-              Create Subject
-            </button>
-          </form>
-        </div>
-      )}
+              <button 
+                type="submit" 
+                className="w-full py-3 bg-brand-gradient text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-lg"
+              >
+                Create Subject
+              </button>
+            </form>
+          </div>
+        )}
 
-      {loading ? (
-        <div className="text-center py-8">Loading...</div>
-      ) : Object.keys(groupedSubjects).length === 0 ? (
-        <div className="card text-center py-8">
-          <p className="text-slate-400">No subjects available.</p>
-        </div>
-      ) : (
-        Object.entries(groupedSubjects)
-          .sort(([a], [b]) => a - b)
-          .map(([year, yearSubjects]) => (
-            <div key={year} className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">Year {year}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {yearSubjects.map((subject) => (
-                  <div key={subject._id} className="card">
-                    <h4 className="font-semibold text-lg">{subject.name}</h4>
-                    <p className="text-slate-400">{subject.code}</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Semester {subject.semester} | {subject.course?.name}
-                    </p>
-                  </div>
-                ))}
+        {/* Loading */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="animate-pulse glass-card p-6">
+                <div className="w-10 h-10 bg-white/10 rounded-xl mb-3" />
+                <div className="w-3/4 h-5 bg-white/10 rounded mb-2" />
+                <div className="w-1/2 h-4 bg-white/10 rounded" />
               </div>
+            ))}
+          </div>
+        ) : Object.keys(groupedSubjects).length === 0 ? (
+          <div className="glass-card text-center py-16 animate-fade-in-up">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
+              <svg className="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
             </div>
-          ))
-      )}
+            <p className="text-slate-400 text-lg">No subjects available</p>
+          </div>
+        ) : (
+          Object.entries(groupedSubjects)
+            .sort(([a], [b]) => a - b)
+            .map(([year, yearSubjects], yearIndex) => (
+              <div key={year} className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-3 animate-fade-in-up" style={{ animationDelay: `${yearIndex * 100}ms` }}>
+                  <span className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center text-white text-sm font-bold">
+                    Y{year}
+                  </span>
+                  Year {year}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {yearSubjects.map((subject, index) => (
+                    <div 
+                      key={subject._id} 
+                      className="glass-card p-5 card-hover animate-fade-in-up"
+                      style={{ animationDelay: `${(yearIndex * 100) + (index * 50)}ms` }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold text-white text-lg">{subject.name}</h4>
+                          <p className="text-slate-500 text-sm">{subject.code}</p>
+                        </div>
+                        <span className="px-2 py-1 bg-white/10 rounded-lg text-xs text-slate-400">
+                          Sem {subject.semester}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-400 mt-3">
+                        {subject.course?.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+        )}
+      </div>
     </div>
   );
 };

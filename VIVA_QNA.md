@@ -17,7 +17,7 @@
 - State management (Context API)
 - API integration (Axios)
 
-### Member 3: Database & Security Engineer
+### Vishwendra: Database & Security Engineer
 - MongoDB schema design
 - Data modeling (User, Subject, Note, ChatMessage, ChatRoom)
 - Indexing and query optimization

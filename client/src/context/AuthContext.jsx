@@ -12,7 +12,20 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
 
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      
+      // Fetch fresh user data to get avatar and other updated fields
+      api.get('/users/me')
+        .then(res => {
+          if (res.data.user) {
+            setUser(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        })
+        .catch(() => {
+          // If fetch fails, use stored user
+        });
     }
     setLoading(false);
   }, []);
@@ -47,6 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     login,
     register,
