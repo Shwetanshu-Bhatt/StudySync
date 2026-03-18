@@ -1,6 +1,86 @@
 const User = require('../models/User');
 const { ErrorResponse } = require('../middleware/errorMiddleware');
 
+// @desc    Google OAuth callback
+// @route   GET /api/auth/google/callback
+// @access  Public
+exports.googleCallback = async (req, res) => {
+  try {
+    // User is already attached to request by passport
+    const user = req.user;
+    
+    // Generate token
+    const token = user.getSignedJwtToken();
+    
+    // Check if user has missing profile details (no branch or year)
+    const needsProfileCompletion = !user.branch || !user.year;
+    
+    // Get frontend URL from environment or use default
+    const frontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    // Redirect to frontend callback with token
+    res.redirect(`${frontendUrl}/auth/google/callback?token=${token}&needsCompletion=${needsProfileCompletion}&user=${encodeURIComponent(JSON.stringify({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      year: user.year,
+      branch: user.branch ? user.branch.toString() : null,
+      avatar: user.avatar || null
+    }))}`);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    const frontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/login?error=google_auth_failed`);
+  }
+};
+
+// @desc    Complete Google OAuth profile (for missing details)
+// @route   POST /api/auth/google/complete-profile
+// @access  Private
+exports.completeGoogleProfile = async (req, res) => {
+  try {
+    const { year, branch } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    user.year = year || user.year;
+    if (branch) {
+      const mongoose = require('mongoose');
+      if (mongoose.Types.ObjectId.isValid(branch)) {
+        user.branch = new mongoose.Types.ObjectId(branch);
+      }
+    }
+    
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      token: user.getSignedJwtToken(),
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        year: user.year,
+        branch: user.branch ? user.branch.toString() : null,
+        avatar: user.avatar || null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // @desc    Register user (students only - teachers added by admin)
 // @route   POST /api/auth/register
 // @access  Public

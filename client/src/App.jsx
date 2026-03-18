@@ -5,10 +5,12 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmModal';
+import GoogleCallback from './components/GoogleCallback';
 
 // Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import CompleteProfile from './pages/CompleteProfile';
 import Dashboard from './pages/Dashboard';
 import UploadNotes from './pages/UploadNotes';
 import BrowseNotes from './pages/BrowseNotes';
@@ -30,6 +32,8 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
+                  <Route path="/complete-profile" element={<CompleteProfile />} />
+                  <Route path="/auth/google/callback" element={<GoogleCallback />} />
                   <Route
                     path="/dashboard"
                     element={

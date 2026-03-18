@@ -21,9 +21,19 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    required: function() { return !this.isGoogleAccount; },
     minlength: [6, 'Password must be at least 6 characters'],
-    select: false
+    select: false,
+    default: null
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  isGoogleAccount: {
+    type: Boolean,
+    default: false
   },
   role: {
     type: String,
@@ -99,7 +109,7 @@ const userSchema = new mongoose.Schema({
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
