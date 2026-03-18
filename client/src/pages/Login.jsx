@@ -18,8 +18,9 @@ const Login = () => {
   const handleGoogleLogin = () => {
     // Store return URL for after OAuth
     localStorage.setItem('oauth_return_url', '/dashboard');
-    // Redirect to Google OAuth
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    // Redirect to Google OAuth - use environment variable
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   // Listen for messages from the popup (Google callback)
