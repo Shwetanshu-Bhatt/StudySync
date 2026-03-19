@@ -1,0 +1,29 @@
+# StudySync Robots.txt
+# https://studysync.apsgroupco.com
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://studysync.apsgroupco.com/sitemap.xml
+
+# Disallow protected routes (require authentication)
+Disallow: /dashboard
+Disallow: /browse-notes
+Disallow: /upload-notes
+Disallow: /subjects
+Disallow: /courses
+Disallow: /manage-teachers
+Disallow: /friends
+Disallow: /chat
+Disallow: /profile
+Disallow: /complete-profile
+
+# Allow public pages
+Allow: /login
+Allow: /signup
+
+# API routes should not be crawled
+Disallow: /api/
+Disallow: /auth/
+Disallow: /uploads/

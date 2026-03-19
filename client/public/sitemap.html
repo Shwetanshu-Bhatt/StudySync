@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sitemap - StudySync</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 40px;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .section h2 {
+      font-size: 1.5rem;
+      color: #667eea;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .section ul {
+      list-style: none;
+    }
+    .section li {
+      margin-bottom: 12px;
+    }
+    .section a {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #f8f9fa;
+      color: #333;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    .section a:hover {
+      background: #667eea;
+      color: white;
+      transform: translateX(5px);
+    }
+    .section a .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      border-radius: 12px;
+      margin-left: 10px;
+    }
+    .badge-public {
+      background: #d4edda;
+      color: #155724;
+    }
+    .badge-auth {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .badge-admin {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .description {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      padding-left: 20px;
+    }
+    .api-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .api-section h3 {
+      font-size: 1.1rem;
+      color: #495057;
+      margin-bottom: 15px;
+    }
+    .api-endpoint {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border-left: 3px solid #667eea;
+    }
+    footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+    .home-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .home-link:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 10px;
+      }
+      header h1 {
+        font-size: 1.8rem;
+      }
+      .content {
+        padding: 20px;
+      }
+      .section a:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🗺️ StudySync Sitemap</h1>
+      <p>Complete navigation guide for StudySync platform</p>
+    </header>
+    
+    <div class="content">
+      <!-- Public Pages -->
+      <div class="section">
+        <h2>🔓 Public Pages</h2>
+        <p class="description">Accessible to all visitors without authentication</p>
+        <ul>
+          <li>
+            <a href="/login">
+              Login Page
+              <span class="badge badge-public">Public</span>
+            </a>
+          </li>
+          <li>
+            <a href="/signup">
+              Signup Page
+              <span class="badge badge-public">Public</span>
+            </a>
+          </li>
+          <li>
+            <a href="/auth/google/callback">
+              Google OAuth Callback
+              <span class="badge badge-public">Public</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Protected Pages - All Users -->
+      <div class="section">
+        <h2>🔐 Protected Pages (All Users)</h2>
+        <p class="description">Requires authentication - available to students, teachers, and admins</p>
+        <ul>
+          <li>
+            <a href="/dashboard">
+              Dashboard
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+          <li>
+            <a href="/browse-notes">
+              Browse Notes
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+          <li>
+            <a href="/friends">
+              Friends
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+          <li>
+            <a href="/chat">
+              Chat
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+          <li>
+            <a href="/profile">
+              Profile
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+          <li>
+            <a href="/complete-profile">
+              Complete Profile
+              <span class="badge badge-auth">Auth</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Protected Pages - Teachers & Admins -->
+      <div class="section">
+        <h2>👨‍🏫 Teacher & Admin Pages</h2>
+        <p class="description">Requires teacher or admin role</p>
+        <ul>
+          <li>
+            <a href="/upload-notes">
+              Upload Notes
+              <span class="badge badge-auth">Teacher+</span>
+            </a>
+          </li>
+          <li>
+            <a href="/subjects">
+              Manage Subjects
+              <span class="badge badge-auth">Teacher+</span>
+            </a>
+          </li>
+          <li>
+            <a href="/courses">
+              Manage Courses
+              <span class="badge badge-auth">Teacher+</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Admin Only Pages -->
+      <div class="section">
+        <h2>⚙️ Admin Only Pages</h2>
+        <p class="description">Requires admin role exclusively</p>
+        <ul>
+          <li>
+            <a href="/manage-teachers">
+              Manage Teachers
+              <span class="badge badge-admin">Admin</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- API Endpoints Reference -->
+      <div class="section">
+        <h2>🔌 API Endpoints Reference</h2>
+        <p class="description">Backend API routes (internal use)</p>
+        
+        <div class="api-section">
+          <h3>📝 Authentication API (/api/auth)</h3>
+          <div class="api-endpoint">POST /api/auth/register - User registration</div>
+          <div class="api-endpoint">POST /api/auth/login - User login</div>
+          <div class="api-endpoint">GET /api/auth/google - Google OAuth initiation</div>
+          <div class="api-endpoint">GET /api/auth/google/callback - Google OAuth callback</div>
+          <div class="api-endpoint">GET /api/auth/me - Get current user</div>
+          <div class="api-endpoint">GET /api/auth/logout - User logout</div>
+          <div class="api-endpoint">POST /api/auth/create-teacher - Create teacher (Admin)</div>
+          <div class="api-endpoint">GET /api/auth/teachers - Get all teachers (Admin)</div>
+        </div>
+
+        <div class="api-section">
+          <h3>👤 User API (/api/users)</h3>
+          <div class="api-endpoint">GET /api/users/me - Get current user profile</div>
+          <div class="api-endpoint">GET /api/users/profile/:id - Get user profile by ID</div>
+          <div class="api-endpoint">PUT /api/users/profile - Update profile</div>
+          <div class="api-endpoint">POST /api/users/avatar - Upload avatar</div>
+          <div class="api-endpoint">GET /api/users/friends - Get friends list</div>
+          <div class="api-endpoint">GET /api/users/friend-requests - Get friend requests</div>
+          <div class="api-endpoint">POST /api/users/friend-request/:userId - Send friend request</div>
+          <div class="api-endpoint">POST /api/users/accept-friend/:requestId - Accept friend request</div>
+          <div class="api-endpoint">DELETE /api/users/friend/:userId - Remove friend</div>
+          <div class="api-endpoint">GET /api/users/search - Search users</div>
+        </div>
+
+        <div class="api-section">
+          <h3>📚 Notes API (/api/notes)</h3>
+          <div class="api-endpoint">GET /api/notes - Get all notes</div>
+          <div class="api-endpoint">GET /api/notes/:id - Get single note</div>
+          <div class="api-endpoint">POST /api/notes - Upload note (Teacher/Admin)</div>
+          <div class="api-endpoint">DELETE /api/notes/:id - Delete note</div>
+        </div>
+
+        <div class="api-section">
+          <h3>📖 Courses API (/api/courses)</h3>
+          <div class="api-endpoint">GET /api/courses - Get all courses</div>
+          <div class="api-endpoint">GET /api/courses/:id - Get course details</div>
+          <div class="api-endpoint">GET /api/courses/:id/teachers - Get course teachers</div>
+          <div class="api-endpoint">POST /api/courses - Create course (Admin)</div>
+          <div class="api-endpoint">PUT /api/courses/:id - Update course (Admin)</div>
+          <div class="api-endpoint">DELETE /api/courses/:id - Delete course (Admin)</div>
+          <div class="api-endpoint">POST /api/courses/:id/assign-teacher - Assign teacher (Admin)</div>
+          <div class="api-endpoint">POST /api/courses/:id/enroll-student - Enroll student (Admin)</div>
+        </div>
+
+        <div class="api-section">
+          <h3>📚 Subjects API (/api/subjects)</h3>
+          <div class="api-endpoint">GET /api/subjects - Get all subjects</div>
+          <div class="api-endpoint">GET /api/subjects/:id - Get subject details</div>
+          <div class="api-endpoint">POST /api/subjects - Create subject (Teacher/Admin)</div>
+          <div class="api-endpoint">PUT /api/subjects/:id - Update subject (Teacher/Admin)</div>
+          <div class="api-endpoint">DELETE /api/subjects/:id - Delete subject (Admin)</div>
+        </div>
+
+        <div class="api-section">
+          <h3>💬 Chat API (/api/chat)</h3>
+          <div class="api-endpoint">GET /api/chat/rooms - Get user's chat rooms</div>
+          <div class="api-endpoint">POST /api/chat/rooms - Create chat room</div>
+          <div class="api-endpoint">DELETE /api/chat/rooms/:roomId - Delete chat room</div>
+          <div class="api-endpoint">GET /api/chat/rooms/:roomId/messages - Get room messages</div>
+          <div class="api-endpoint">POST /api/chat/rooms/:roomId/messages - Send message</div>
+          <div class="api-endpoint">POST /api/chat/dm/:userId - Get or create DM room</div>
+          <div class="api-endpoint">GET /api/chat/unread - Get unread message count</div>
+        </div>
+
+        <div class="api-section">
+          <h3>🏥 Health Check</h3>
+          <div class="api-endpoint">GET /health - Server health check</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>StudySync - Your Collaborative Learning Platform</p>
+      <a href="/login" class="home-link">Go to Login</a>
+    </footer>
+  </div>
+</body>
+</html>
