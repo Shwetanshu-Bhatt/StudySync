@@ -36,6 +36,10 @@
       font-size: 2.5rem;
       margin-bottom: 10px;
     }
+    header h1::before {
+      content: "\2630";
+      margin-right: 15px;
+    }
     header p {
       font-size: 1.1rem;
       opacity: 0.9;
@@ -52,6 +56,10 @@
       margin-bottom: 20px;
       padding-bottom: 10px;
       border-bottom: 2px solid #f0f0f0;
+    }
+    .section h2::before {
+      content: "\2022";
+      margin-right: 10px;
     }
     .section ul {
       list-style: none;
@@ -97,6 +105,7 @@
       color: #666;
       font-size: 0.9rem;
       margin-top: 5px;
+      margin-bottom: 20px;
       padding-left: 20px;
     }
     .api-section {
@@ -109,6 +118,10 @@
       font-size: 1.1rem;
       color: #495057;
       margin-bottom: 15px;
+    }
+    .api-section h3::before {
+      content: "\2014";
+      margin-right: 8px;
     }
     .api-endpoint {
       font-family: 'Courier New', monospace;
@@ -158,14 +171,14 @@
 <body>
   <div class="container">
     <header>
-      <h1>🗺️ StudySync Sitemap</h1>
+      <h1>StudySync Sitemap</h1>
       <p>Complete navigation guide for StudySync platform</p>
     </header>
-    
+
     <div class="content">
       <!-- Public Pages -->
       <div class="section">
-        <h2>🔓 Public Pages</h2>
+        <h2>Public Pages</h2>
         <p class="description">Accessible to all visitors without authentication</p>
         <ul>
           <li>
@@ -191,7 +204,7 @@
 
       <!-- Protected Pages - All Users -->
       <div class="section">
-        <h2>🔐 Protected Pages (All Users)</h2>
+        <h2>Protected Pages (All Users)</h2>
         <p class="description">Requires authentication - available to students, teachers, and admins</p>
         <ul>
           <li>
@@ -235,7 +248,7 @@
 
       <!-- Protected Pages - Teachers & Admins -->
       <div class="section">
-        <h2>👨‍🏫 Teacher & Admin Pages</h2>
+        <h2>Teacher and Admin Pages</h2>
         <p class="description">Requires teacher or admin role</p>
         <ul>
           <li>
@@ -261,7 +274,7 @@
 
       <!-- Admin Only Pages -->
       <div class="section">
-        <h2>⚙️ Admin Only Pages</h2>
+        <h2>Admin Only Pages</h2>
         <p class="description">Requires admin role exclusively</p>
         <ul>
           <li>
@@ -275,11 +288,11 @@
 
       <!-- API Endpoints Reference -->
       <div class="section">
-        <h2>🔌 API Endpoints Reference</h2>
+        <h2>API Endpoints Reference</h2>
         <p class="description">Backend API routes (internal use)</p>
-        
+
         <div class="api-section">
-          <h3>📝 Authentication API (/api/auth)</h3>
+          <h3>Authentication API (/api/auth)</h3>
           <div class="api-endpoint">POST /api/auth/register - User registration</div>
           <div class="api-endpoint">POST /api/auth/login - User login</div>
           <div class="api-endpoint">GET /api/auth/google - Google OAuth initiation</div>
@@ -291,7 +304,7 @@
         </div>
 
         <div class="api-section">
-          <h3>👤 User API (/api/users)</h3>
+          <h3>User API (/api/users)</h3>
           <div class="api-endpoint">GET /api/users/me - Get current user profile</div>
           <div class="api-endpoint">GET /api/users/profile/:id - Get user profile by ID</div>
           <div class="api-endpoint">PUT /api/users/profile - Update profile</div>
@@ -305,7 +318,7 @@
         </div>
 
         <div class="api-section">
-          <h3>📚 Notes API (/api/notes)</h3>
+          <h3>Notes API (/api/notes)</h3>
           <div class="api-endpoint">GET /api/notes - Get all notes</div>
           <div class="api-endpoint">GET /api/notes/:id - Get single note</div>
           <div class="api-endpoint">POST /api/notes - Upload note (Teacher/Admin)</div>
@@ -313,7 +326,7 @@
         </div>
 
         <div class="api-section">
-          <h3>📖 Courses API (/api/courses)</h3>
+          <h3>Courses API (/api/courses)</h3>
           <div class="api-endpoint">GET /api/courses - Get all courses</div>
           <div class="api-endpoint">GET /api/courses/:id - Get course details</div>
           <div class="api-endpoint">GET /api/courses/:id/teachers - Get course teachers</div>
@@ -325,7 +338,7 @@
         </div>
 
         <div class="api-section">
-          <h3>📚 Subjects API (/api/subjects)</h3>
+          <h3>Subjects API (/api/subjects)</h3>
           <div class="api-endpoint">GET /api/subjects - Get all subjects</div>
           <div class="api-endpoint">GET /api/subjects/:id - Get subject details</div>
           <div class="api-endpoint">POST /api/subjects - Create subject (Teacher/Admin)</div>
@@ -334,7 +347,7 @@
         </div>
 
         <div class="api-section">
-          <h3>💬 Chat API (/api/chat)</h3>
+          <h3>Chat API (/api/chat)</h3>
           <div class="api-endpoint">GET /api/chat/rooms - Get user's chat rooms</div>
           <div class="api-endpoint">POST /api/chat/rooms - Create chat room</div>
           <div class="api-endpoint">DELETE /api/chat/rooms/:roomId - Delete chat room</div>
@@ -345,7 +358,7 @@
         </div>
 
         <div class="api-section">
-          <h3>🏥 Health Check</h3>
+          <h3>Health Check</h3>
           <div class="api-endpoint">GET /health - Server health check</div>
         </div>
       </div>

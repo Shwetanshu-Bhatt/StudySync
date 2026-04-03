@@ -2,7 +2,7 @@
 
 > Complete navigation structure for the StudySync platform
 
-## 🌐 Website Pages
+## Website Pages
 
 ### Public Pages (Accessible to All)
 | Page | URL | Description |
@@ -35,7 +35,7 @@
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication API (`/api/auth`)
 | Method | Endpoint | Description | Auth Required |
@@ -121,7 +121,7 @@
 
 ---
 
-## 📁 Sitemap Files
+## Sitemap Files
 
 | File | Location | Purpose |
 |------|----------|---------|
@@ -131,7 +131,7 @@
 
 ---
 
-## 🔍 SEO Notes
+## SEO Notes
 
 ### Priority Levels
 - **1.0** - Dashboard (main entry point after login)
