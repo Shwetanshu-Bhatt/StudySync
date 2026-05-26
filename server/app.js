@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const passport = require('passport');
-const session = require('express-session');
 
 // Load env vars
 dotenv.config();
@@ -13,26 +11,6 @@ const app = express();
 
 // Body parser
 app.use(express.json());
-
-// Initialize passport
-app.use(passport.initialize());
-
-// Session configuration (required for passport)
-app.use(session({
-  secret: process.env.JWT_SECRET || 'studysync-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
-// Initialize passport session
-app.use(passport.session());
-
-// Load passport config
-require('./config/passport')(passport);
 
 // Enable CORS - handle trailing slash issue
 const corsOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
