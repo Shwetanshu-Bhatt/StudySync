@@ -1,4 +1,8 @@
-# StudySync - Easy Guide
+# StudySync
+
+A full-stack educational platform that enables students and teachers to share study materials, collaborate through real-time chat, and organize academic resources by branch, year, and semester.
+
+Built using React, Node.js, Express, MongoDB, Socket.io, and Cloudinary.
 
 **What is StudySync?**  
 StudySync is a website where students and teachers can share study materials and chat with each other.
