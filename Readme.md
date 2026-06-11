@@ -294,8 +294,8 @@ Think of APIs like a menu in a restaurant:
 
 ## Need More Help?
 
-This guide covers the basics. For detailed technical documentation, you would need to look at the code comments and the full API documentation.
+This guide covers the basics. For detailed technical documentation, you would need to look at the code comments and the full documentation.
 
 ---
 
-*Last Updated: 20 February 2026*
+*Last Updated: 20 May 2026*
