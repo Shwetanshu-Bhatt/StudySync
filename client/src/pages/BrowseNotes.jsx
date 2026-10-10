@@ -188,8 +188,8 @@ const BrowseNotes = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="animate-pulse glass-card p-6">
-                <div className="w-12 h-12 bg-white mb-4" />
-                <div className="w/10 rounded-xl-3/4 h-5 bg-white/10 rounded mb-3" />
+                <div className="w-12 h-12 bg-slate-100 rounded-xl mb-4" />
+                <div className="w-3/4 h-5 bg-white/10 rounded mb-3" />
                 <div className="w-1/2 h-4 bg-white/10 rounded" />
               </div>
             ))}

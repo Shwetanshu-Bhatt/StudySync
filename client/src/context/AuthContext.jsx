@@ -52,6 +52,17 @@ export const AuthProvider = ({ children }) => {
     return user;
   };
 
+  const loginWithGoogle = async (credential, options = {}) => {
+    const response = await api.post('/auth/google', { credential, ...options });
+    const { token, user } = response.data;
+
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setUser(user);
+
+    return user;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -64,6 +75,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    loginWithGoogle,
     logout,
     isAuthenticated: !!user,
     isTeacher: user?.role === 'teacher',

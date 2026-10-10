@@ -1,10 +1,14 @@
+import { useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
+  const { pathname } = useLocation();
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
+
   return (
-    <div className="min-h-screen bg-[#0f0a1a]">
-      <Navbar />
-      <main className="pt-16 lg:pt-20">
+    <div className="study-app min-h-screen">
+      {!isAuthPage && <Navbar />}
+      <main className={isAuthPage ? 'study-main study-main-auth' : 'study-main pt-16 lg:pt-20'}>
         {children}
       </main>
     </div>

@@ -87,7 +87,7 @@ const Profile = () => {
   const getAvatarColor = (role) => {
     switch (role) {
       case 'teacher': return 'from-amber-500 to-orange-500';
-      case 'admin': return 'from-red-500 to-pink-500';
+      case 'admin': return 'from-red-500 to-red-600';
       default: return 'from-primary-500 to-secondary-500';
     }
   };

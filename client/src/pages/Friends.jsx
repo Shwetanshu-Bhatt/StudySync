@@ -3,6 +3,17 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+const FriendAvatar = ({ src, name, size = 'standard' }) => {
+  const sizeClass = `friend-avatar-${size}`;
+  const initial = name?.trim().charAt(0).toUpperCase() || '?';
+
+  return src ? (
+    <img src={src} alt="" className={`friend-avatar-image ${sizeClass}`} />
+  ) : (
+    <span className={`friend-avatar ${sizeClass}`} aria-hidden="true">{initial}</span>
+  );
+};
+
 const Friends = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -213,17 +224,9 @@ const Friends = () => {
     }
   };
 
-  const getAvatarColor = (role) => {
-    switch (role) {
-      case 'teacher': return 'from-amber-500 to-orange-500';
-      case 'admin': return 'from-red-500 to-pink-500';
-      default: return 'from-primary-500 to-secondary-500';
-    }
-  };
-
   const tabs = [
-    { id: 'friends', label: 'My Friends', count: friends.length, icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
-    { id: 'requests', label: 'Requests', count: friendRequests.length, icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0z' },
+    { id: 'friends', label: 'My Friends', count: friends.length, icon: 'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.5 8c0-3.5 1.9-5.3 5.5-5.3 2.2 0 3.9.7 4.8 2M16 11a3 3 0 1 0 0-6m-1 8.7c2.8.4 4.2 1.9 4.2 4.6' },
+    { id: 'requests', label: 'Requests', count: friendRequests.length, icon: 'M4 10.5h4l2 3h4l2-3h4M5 10.5V19h14v-8.5M12 3v6m-2-2 2 2 2-2' },
     { id: 'suggestions', label: 'Find Friends', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' }
   ];
 
@@ -311,13 +314,7 @@ const Friends = () => {
                           }}
                           className="px-4 py-3 hover:bg-white/10 cursor-pointer flex items-center gap-3 transition-colors"
                         >
-                          {result.avatar ? (
-                            <img src={result.avatar} alt={result.name} className="w-10 h-10 rounded-full object-cover" />
-                          ) : (
-                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(result.role)} flex items-center justify-center text-white font-bold shadow-lg`}>
-                              {result.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                          <FriendAvatar src={result.avatar} name={result.name} size="small" />
                           <div className="flex-1">
                             <p className="font-semibold text-white">{result.name}</p>
                             <p className="text-slate-400 text-sm">{result.email}</p>
@@ -343,13 +340,7 @@ const Friends = () => {
                   searchResults.map((result) => (
                     <div key={result._id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-4">
-                        {result.avatar ? (
-                          <img src={result.avatar} alt={result.name} className="w-12 h-12 rounded-full object-cover" />
-                        ) : (
-                          <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(result.role)} flex items-center justify-center text-white font-bold shadow-lg`}>
-                            {result.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
+                        <FriendAvatar src={result.avatar} name={result.name} />
                         <div>
                           <p className="font-semibold text-white">{result.name}</p>
                           <p className="text-slate-400 text-sm">{result.email}</p>
@@ -377,16 +368,12 @@ const Friends = () => {
             {!showDropdown && searchQuery === '' && (
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-white mb-4">Suggested Friends</h3>
-                {suggestions.slice(0, displayedCount).map((suggestion) => (
+                {suggestions.length === 0 ? (
+                  <p className="friends-inline-empty">No classmates to suggest right now.</p>
+                ) : suggestions.slice(0, displayedCount).map((suggestion) => (
                   <div key={suggestion._id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-4">
-                      {suggestion.avatar ? (
-                        <img src={suggestion.avatar} alt={suggestion.name} className="w-12 h-12 rounded-full object-cover" />
-                      ) : (
-                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(suggestion.role)} flex items-center justify-center text-white font-bold shadow-lg`}>
-                          {suggestion.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      <FriendAvatar src={suggestion.avatar} name={suggestion.name} />
                       <div>
                         <p className="font-semibold text-white flex items-center gap-2">
                           {suggestion.name}
@@ -430,25 +417,15 @@ const Friends = () => {
         {activeTab === 'requests' && (
           <div className="space-y-3 animate-fade-in-up">
             {friendRequests.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                </div>
-                <p className="text-slate-400">No pending friend requests</p>
+              <div className="friends-inline-empty">
+                <span>REQUESTS</span>
+                <p>No pending friend requests.</p>
               </div>
             ) : (
               friendRequests.map((request) => (
                 <div key={request._id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
                   <div className="flex items-center gap-4">
-                    {request.from?.avatar ? (
-                      <img src={request.from.avatar} alt={request.from.name} className="w-12 h-12 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold shadow-lg">
-                        {request.from?.name?.charAt(0).toUpperCase() || '?'}
-                      </div>
-                    )}
+                    <FriendAvatar src={request.from?.avatar} name={request.from?.name} />
                     <div>
                       <p className="font-semibold text-white">{request.from?.name || 'Unknown'}</p>
                       <p className="text-slate-400 text-sm">{request.from?.email}</p>
@@ -468,14 +445,17 @@ const Friends = () => {
         {activeTab === 'friends' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in-up">
             {friends.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+              <div className="friends-empty-state col-span-full">
+                <p className="friends-empty-overline">STUDYSYNC COMMUNITY</p>
+                <div className="friends-empty-main">
+                  <div>
+                    <h2>Find your classmates.</h2>
+                    <p>Connect with people from your courses and start a study conversation.</p>
+                  </div>
+                  <button onClick={() => setActiveTab('suggestions')} className="friends-empty-action">
+                    Find classmates <span aria-hidden="true">→</span>
+                  </button>
                 </div>
-                <p className="text-slate-400 mb-4">No friends yet. Start adding friends!</p>
-                <button onClick={() => setActiveTab('suggestions')} className="px-6 py-3 bg-brand-gradient text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-lg">Find Friends</button>
               </div>
             ) : (
               friends.map((friend) => {
@@ -483,25 +463,19 @@ const Friends = () => {
                 return (
                   <div key={friend._id || friendUser._id} className="glass-card p-5 hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-4 mb-4">
-                      {friendUser.avatar ? (
-                        <img src={friendUser.avatar} alt={friendUser.name} className="w-14 h-14 rounded-full object-cover" />
-                      ) : (
-                        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${getAvatarColor(friendUser.role)} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                          {friendUser.name?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                      )}
+                      <FriendAvatar src={friendUser.avatar} name={friendUser.name} size="large" />
                       <div>
                         <p className="font-semibold text-white text-lg">{friendUser.name || 'Unknown'}</p>
                         <p className="text-slate-400 text-sm">{friendUser.email}</p>
                         <p className="text-slate-500 text-xs capitalize">{friendUser.role}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => setSelectedFriend(friendUser)} className="flex-1 px-4 py-2.5 bg-brand-gradient text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-lg shadow-primary-500/25 flex items-center justify-center gap-2">
+                    <div className="friend-card-actions flex gap-2">
+                      <button onClick={() => setSelectedFriend(friendUser)} className="friend-chat-button flex-1 px-4 py-2.5 bg-brand-gradient text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-lg shadow-primary-500/25 flex items-center justify-center gap-2">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                         Chat
                       </button>
-                      <button onClick={() => removeFriend(friendUser._id)} className="px-4 py-2.5 bg-white/10 hover:bg-red-500/20 text-white rounded-xl font-medium transition-colors">
+                      <button type="button" onClick={() => removeFriend(friendUser._id)} className="friend-remove-button px-4 py-2.5 bg-white/10 hover:bg-red-500/20 text-white rounded-xl font-medium transition-colors" aria-label={'Remove ' + (friendUser.name || 'friend')}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     </div>
