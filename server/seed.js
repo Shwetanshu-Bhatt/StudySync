@@ -6,10 +6,11 @@ require('dotenv').config();
 const User = require('./models/User');
 const Course = require('./models/Course');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shwetanshubhatt_db_owner:hL1fSCz3pnt742e1@studysyncmain.0znirwf.mongodb.net/studysync';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 const seedData = async () => {
   try {
+    if (!MONGODB_URI) throw new Error('Set MONGODB_URI or MONGO_URI before seeding');
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB');
 

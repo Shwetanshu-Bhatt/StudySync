@@ -1,11 +1,12 @@
 // Temporary script to delete all chat rooms
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Use the EXACT same MongoDB URI from server/.env
-const MONGODB_URI = 'mongodb+srv://shwetanshubhatt_db_owner:hL1fSCz3pnt742e1@studysyncmain.0znirwf.mongodb.net/studysync?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 async function deleteAllRooms() {
   try {
+    if (!MONGODB_URI) throw new Error('Set MONGODB_URI or MONGO_URI before deleting rooms');
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB');
 

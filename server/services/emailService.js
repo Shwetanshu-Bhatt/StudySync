@@ -26,7 +26,7 @@ const sendOtpEmail = async ({ to, code, purpose }) => {
   const isVerification = purpose === 'verification';
   const title = isVerification ? 'Verify your StudySync email' : 'Reset your StudySync password';
   const action = isVerification ? 'verify your email address' : 'reset your password';
-  const sender = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const sender = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER;
   const from = sender.includes('<') ? sender : `StudySync <${sender}>`;
 
   await getTransporter().sendMail({
