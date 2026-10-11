@@ -58,7 +58,9 @@ const Signup = () => {
       navigate(`/verify-email?email=${encodeURIComponent(result.email || userData.email)}`);
     } catch (err) {
       if (err.response?.data?.emailVerificationRequired) {
-        navigate(`/verify-email?email=${encodeURIComponent(err.response.data.email || formData.email)}`);
+        const email = encodeURIComponent(err.response.data.email || formData.email);
+        const deliveryState = err.response.status === 503 ? '&delivery=failed' : '';
+        navigate(`/verify-email?email=${email}${deliveryState}`);
         return;
       }
       setError(err.response?.data?.message || 'Registration failed');

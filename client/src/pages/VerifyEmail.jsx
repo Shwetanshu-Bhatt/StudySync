@@ -7,9 +7,10 @@ const VerifyEmail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const deliveryFailed = searchParams.get('delivery') === 'failed';
   const [email, setEmail] = useState(location.state?.email || searchParams.get('email') || '');
   const [code, setCode] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(deliveryFailed ? 'Your account was saved, but the verification email could not be sent. Wait one minute, then resend the code.' : '');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const { verifyEmail } = useAuth();
@@ -67,7 +68,11 @@ const VerifyEmail = () => {
           <div className="auth-form-content">
             <p className="auth-kicker">EMAIL VERIFICATION</p>
             <h2>Check your inbox</h2>
-            <p className="auth-intro">Enter the six-digit code we sent to finish creating your account.</p>
+            <p className="auth-intro">
+              {deliveryFailed
+                ? 'Email delivery failed for this attempt. After the cooldown, resend the code or check the server email configuration.'
+                : 'Enter the six-digit code we sent to finish creating your account.'}
+            </p>
 
             {error && <div className="auth-error" role="alert"><span>{error}</span></div>}
             {notice && <div className="auth-note" role="status">{notice}</div>}
