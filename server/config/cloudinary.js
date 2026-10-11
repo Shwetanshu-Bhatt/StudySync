@@ -1,5 +1,4 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
 // Configure Cloudinary
@@ -9,14 +8,53 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Create storage engine for Cloudinary - Notes/Documents
-const cloudStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'studysync-notes',
-    allowed_formats: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
-    resource_type: 'raw'
+class CloudinaryStorage {
+  constructor(cloudinaryClient, params) {
+    this.cloudinary = cloudinaryClient;
+    this.params = params;
   }
+
+  _handleFile(req, file, callback) {
+    let finished = false;
+    const finish = (error, info) => {
+      if (finished) return;
+      finished = true;
+      callback(error, info);
+    };
+
+    const uploadStream = this.cloudinary.uploader.upload_stream(this.params, (error, result) => {
+      if (error) return finish(error);
+      finish(null, {
+        filename: result.public_id,
+        public_id: result.public_id,
+        path: result.secure_url,
+        secure_url: result.secure_url,
+        resource_type: result.resource_type,
+        size: result.bytes
+      });
+    });
+
+    file.stream.once('error', finish);
+    uploadStream.once('error', finish);
+    file.stream.pipe(uploadStream);
+  }
+
+  _removeFile(req, file, callback) {
+    const publicId = file.public_id || file.filename;
+    if (!publicId) return callback(null);
+
+    this.cloudinary.uploader.destroy(publicId, {
+      resource_type: file.resource_type || 'raw',
+      invalidate: true
+    }, (error) => callback(error));
+  }
+}
+
+// Store uploaded notes and documents directly in Cloudinary.
+const cloudStorage = new CloudinaryStorage(cloudinary, {
+  folder: 'studysync-notes',
+  allowed_formats: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
+  resource_type: 'raw'
 });
 
 // File filter for uploads

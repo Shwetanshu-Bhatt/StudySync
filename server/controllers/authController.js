@@ -2,25 +2,81 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const mongoose = require('mongoose');
 const { OAuth2Client } = require('google-auth-library');
+const { createHmac, randomInt, timingSafeEqual } = require('crypto');
+const { sendOtpEmail } = require('../services/emailService');
 
 const googleAuthClient = new OAuth2Client();
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_COOLDOWN_MS = 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
 
-const sendGoogleAuthResponse = (res, user, status = 200) => {
+const normalizeEmail = (email) => typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+const otpHash = (email, purpose, code) => createHmac('sha256', process.env.JWT_SECRET)
+  .update(`${purpose}:${email}:${code}`)
+  .digest('hex');
+
+const setOtp = (user, purpose, code, now = new Date()) => {
+  const prefix = purpose === 'verification' ? 'emailVerification' : 'passwordReset';
+  user[`${prefix}OtpHash`] = otpHash(user.email, purpose, code);
+  user[`${prefix}OtpExpiresAt`] = new Date(now.getTime() + OTP_TTL_MS);
+  user[`${prefix}OtpSentAt`] = now;
+  user[`${prefix}OtpAttempts`] = 0;
+};
+
+const clearOtp = (user, purpose) => {
+  const prefix = purpose === 'verification' ? 'emailVerification' : 'passwordReset';
+  user[`${prefix}OtpHash`] = undefined;
+  user[`${prefix}OtpExpiresAt`] = undefined;
+  user[`${prefix}OtpSentAt`] = undefined;
+  user[`${prefix}OtpAttempts`] = 0;
+};
+
+const otpIsValid = (user, purpose, code) => {
+  const prefix = purpose === 'verification' ? 'emailVerification' : 'passwordReset';
+  const hash = user[`${prefix}OtpHash`];
+  const expiresAt = user[`${prefix}OtpExpiresAt`];
+  const attempts = user[`${prefix}OtpAttempts`] || 0;
+  if (!hash || !expiresAt || expiresAt.getTime() <= Date.now() || attempts >= OTP_MAX_ATTEMPTS) return false;
+
+  const submittedHash = Buffer.from(otpHash(user.email, purpose, code), 'hex');
+  const savedHash = Buffer.from(hash, 'hex');
+  return submittedHash.length === savedHash.length && timingSafeEqual(submittedHash, savedHash);
+};
+
+const issueOtp = async (user, purpose) => {
+  const prefix = purpose === 'verification' ? 'emailVerification' : 'passwordReset';
+  const sentAt = user[`${prefix}OtpSentAt`];
+  if (sentAt && Date.now() - sentAt.getTime() < OTP_COOLDOWN_MS) {
+    const error = new Error('Please wait a minute before requesting another code');
+    error.code = 'OTP_COOLDOWN';
+    throw error;
+  }
+
+  const code = String(randomInt(100000, 1000000));
+  setOtp(user, purpose, code);
+  await user.save();
+  await sendOtpEmail({ to: user.email, code, purpose });
+};
+
+const publicUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  year: user.year,
+  branch: user.branch ? user.branch.toString() : null,
+  avatar: user.avatar || null,
+  createdAt: user.createdAt
+});
+
+const sendAuthResponse = (res, user, status = 200) => {
   const token = user.getSignedJwtToken();
 
   return res.status(status).json({
     success: true,
     token,
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      year: user.year,
-      branch: user.branch ? user.branch.toString() : null,
-      avatar: user.avatar || null,
-      createdAt: user.createdAt
-    }
+    user: publicUser(user)
   });
 };
 
@@ -30,10 +86,11 @@ const sendGoogleAuthResponse = (res, user, status = 200) => {
 exports.register = async (req, res) => {
   try {
     const { name, email, password, year, branch } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const existingUser = await User.findOne({ email: normalizedEmail })
+      .select('+password +emailVerificationOtpSentAt');
+    if (existingUser && existingUser.emailVerified !== false) {
       return res.status(400).json({
         success: false,
         message: 'Email already registered'
@@ -45,40 +102,152 @@ exports.register = async (req, res) => {
     // Convert branch string to ObjectId if provided
     const mongoose = require('mongoose');
     const branchId = branch && mongoose.Types.ObjectId.isValid(branch) ? new mongoose.Types.ObjectId(branch) : null;
-    
-    const user = await User.create({
+
+    const user = existingUser || new User();
+    user.set({
       name,
-      email,
+      email: normalizedEmail,
       password,
       role: 'student',
       year: year || 1,
       branch: branchId,
-      avatar: ''
+      avatar: '',
+      emailVerified: false
     });
 
-    console.log('New user created:', user._id, 'Avatar:', user.avatar);
-
-    // Generate token
-    const token = user.getSignedJwtToken();
-
-    res.status(201).json({
-      success: true,
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        year: user.year,
-        branch: user.branch ? user.branch.toString() : null,
-        avatar: user.avatar || null
+    try {
+      await issueOtp(user, 'verification');
+    } catch (error) {
+      if (error.code === 'OTP_COOLDOWN') {
+        return res.status(429).json({ success: false, message: error.message, emailVerificationRequired: true });
       }
+      console.error('Verification email delivery failed:', error.message);
+      return res.status(503).json({
+        success: false,
+        message: 'Your account is saved. We could not send the verification code; please try sending it again.',
+        emailVerificationRequired: true,
+        email: normalizedEmail
+      });
+    }
+
+    return res.status(existingUser ? 200 : 201).json({
+      success: true,
+      emailVerificationRequired: true,
+      email: normalizedEmail,
+      message: 'A verification code has been sent to your email.'
     });
   } catch (error) {
+    console.error('Registration failed:', error.message);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.code === 11000 ? 'Email already registered' : 'Could not create your account'
     });
+  }
+};
+
+// @route POST /api/auth/verify-email
+exports.verifyEmail = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const code = typeof req.body.code === 'string' ? req.body.code.trim() : '';
+    const user = await User.findOne({ email }).select(
+      '+emailVerificationOtpHash +emailVerificationOtpExpiresAt +emailVerificationOtpAttempts'
+    );
+
+    if (!user || user.emailVerified !== false) {
+      return res.status(400).json({ success: false, message: 'This verification code is invalid or expired' });
+    }
+
+    if (!/^\d{6}$/.test(code) || !otpIsValid(user, 'verification', code)) {
+      if (user.emailVerificationOtpHash && (user.emailVerificationOtpAttempts || 0) < OTP_MAX_ATTEMPTS) {
+        user.emailVerificationOtpAttempts = (user.emailVerificationOtpAttempts || 0) + 1;
+        await user.save();
+      }
+      return res.status(400).json({ success: false, message: 'This verification code is invalid or expired' });
+    }
+
+    user.emailVerified = true;
+    clearOtp(user, 'verification');
+    await user.save();
+    return sendAuthResponse(res, user);
+  } catch (error) {
+    console.error('Email verification failed:', error.message);
+    return res.status(500).json({ success: false, message: 'Could not verify this email' });
+  }
+};
+
+// @route POST /api/auth/resend-verification
+exports.resendVerification = async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  try {
+    const user = await User.findOne({ email }).select('+emailVerificationOtpSentAt');
+    if (!user || user.emailVerified !== false) {
+      return res.status(200).json({ success: true, message: 'If verification is needed, a new code will be sent.' });
+    }
+
+    await issueOtp(user, 'verification');
+    return res.status(200).json({ success: true, message: 'A new verification code has been sent.' });
+  } catch (error) {
+    if (error.code === 'OTP_COOLDOWN') {
+      return res.status(429).json({ success: false, message: error.message });
+    }
+    console.error('Verification email delivery failed:', error.message);
+    return res.status(503).json({ success: false, message: 'Could not send the code. Please try again shortly.' });
+  }
+};
+
+// @route POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  try {
+    const user = await User.findOne({ email }).select('+password +passwordResetOtpSentAt');
+    if (user && user.password && user.emailVerified !== false) {
+      try {
+        await issueOtp(user, 'reset');
+      } catch (error) {
+        if (error.code !== 'OTP_COOLDOWN') {
+          console.error('Password reset email delivery failed:', error.message);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Password reset request failed:', error.message);
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: 'If an account with that email exists, a password reset code will be sent.'
+  });
+};
+
+// @route POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const code = typeof req.body.code === 'string' ? req.body.code.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
+    const user = await User.findOne({ email }).select(
+      '+password +passwordResetOtpHash +passwordResetOtpExpiresAt +passwordResetOtpAttempts'
+    );
+
+    if (!user || !user.password || user.emailVerified === false || !/^\d{6}$/.test(code) || !otpIsValid(user, 'reset', code)) {
+      if (user?.passwordResetOtpHash && (user.passwordResetOtpAttempts || 0) < OTP_MAX_ATTEMPTS) {
+        user.passwordResetOtpAttempts = (user.passwordResetOtpAttempts || 0) + 1;
+        await user.save();
+      }
+      return res.status(400).json({ success: false, message: 'The reset code is invalid or expired' });
+    }
+
+    user.password = password;
+    clearOtp(user, 'reset');
+    await user.save();
+    return res.status(200).json({ success: true, message: 'Password updated. You can now sign in.' });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+    console.error('Password reset failed:', error.message);
+    return res.status(500).json({ success: false, message: 'Could not reset your password' });
   }
 };
 
@@ -160,6 +329,14 @@ exports.login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
+      });
+    }
+
+    if (user.emailVerified === false) {
+      return res.status(403).json({
+        success: false,
+        message: 'Verify your email before signing in',
+        emailVerificationRequired: true
       });
     }
 
@@ -282,15 +459,19 @@ exports.googleAuth = async (req, res) => {
           avatar: payload.picture || ''
         });
 
-        return sendGoogleAuthResponse(res, user, 201);
+        user.emailVerified = true;
+        return sendAuthResponse(res, user, 201);
       }
     }
 
-    return sendGoogleAuthResponse(res, user);
+    user.emailVerified = true;
+    clearOtp(user, 'verification');
+    await user.save();
+    return sendAuthResponse(res, user);
   } catch (error) {
     if (error.code === 11000) {
       const existingGoogleUser = await User.findOne({ googleId: payload.sub });
-      if (existingGoogleUser) return sendGoogleAuthResponse(res, existingGoogleUser);
+      if (existingGoogleUser) return sendAuthResponse(res, existingGoogleUser);
       return res.status(409).json({ success: false, message: 'An account already uses this email' });
     }
 

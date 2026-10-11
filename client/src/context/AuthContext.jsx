@@ -43,6 +43,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
+    return response.data;
+  };
+
+  const verifyEmail = async (email, code) => {
+    const response = await api.post('/auth/verify-email', { email, code });
     const { token, user } = response.data;
 
     localStorage.setItem('token', token);
@@ -75,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    verifyEmail,
     loginWithGoogle,
     logout,
     isAuthenticated: !!user,

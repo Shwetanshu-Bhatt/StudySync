@@ -24,6 +24,10 @@ const Login = () => {
       await login(formData.email, formData.password);
       navigate('/dashboard');
     } catch (err) {
+      if (err.response?.data?.emailVerificationRequired) {
+        navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+        return;
+      }
       setError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -121,6 +125,8 @@ const Login = () => {
                   </button>
                 </div>
               </label>
+
+              <p className="auth-forgot-link"><Link to="/forgot-password">Forgot password?</Link></p>
 
               <button className="auth-submit" type="submit" disabled={loading}>
                 {loading ? 'Signing in…' : 'Sign in'}

@@ -19,6 +19,26 @@ const userSchema = new mongoose.Schema({
       'Please provide a valid email'
     ]
   },
+  emailVerified: {
+    type: Boolean,
+    default: true
+  },
+  emailVerificationOtpHash: { type: String, select: false },
+  emailVerificationOtpExpiresAt: { type: Date, select: false },
+  emailVerificationOtpSentAt: { type: Date, select: false },
+  emailVerificationOtpAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
+  passwordResetOtpHash: { type: String, select: false },
+  passwordResetOtpExpiresAt: { type: Date, select: false },
+  passwordResetOtpSentAt: { type: Date, select: false },
+  passwordResetOtpAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
   password: {
     type: String,
     required: function() { return !this.googleId; },

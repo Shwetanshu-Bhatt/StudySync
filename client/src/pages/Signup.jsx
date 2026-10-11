@@ -53,9 +53,14 @@ const Signup = () => {
     setLoading(true);
     try {
       const { course, ...userData } = formData;
-      await register({ ...userData, branch: course });
-      navigate('/dashboard');
+      delete userData.confirmPassword;
+      const result = await register({ ...userData, branch: course });
+      navigate(`/verify-email?email=${encodeURIComponent(result.email || userData.email)}`);
     } catch (err) {
+      if (err.response?.data?.emailVerificationRequired) {
+        navigate(`/verify-email?email=${encodeURIComponent(err.response.data.email || formData.email)}`);
+        return;
+      }
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
@@ -208,7 +213,7 @@ const Signup = () => {
               </div>
 
               <button className="auth-submit" type="submit" disabled={loading}>
-                {loading ? 'Creating account…' : 'Create account'}
+                {loading ? 'Sending verification code…' : 'Continue with email'}
                 {!loading && <span aria-hidden="true">→</span>}
               </button>
               <p className="auth-note">Teachers can only be added by administrators.</p>

@@ -9,6 +9,8 @@ import { ConfirmProvider } from './components/ConfirmModal';
 // Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import UploadNotes from './pages/UploadNotes';
 import BrowseNotes from './pages/BrowseNotes';
@@ -30,6 +32,8 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                    <Route
                     path="/dashboard"
                     element={
